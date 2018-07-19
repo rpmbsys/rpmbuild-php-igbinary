@@ -45,7 +45,7 @@ jobs:
           no_output_timeout: 2h
       - restore_cache:
           keys:
-            - rpm-cache-v7-{{ checksum "requirements.txt" }}-{{ checksum "SPECS/php.spec" }}
+            - rpm-cache-v7-{{ checksum "requirements.txt" }}-{{ checksum "SPECS/php-pecl-igbinary.spec" }}
             - rpm-cache-v7-{{ checksum "requirements.txt" }}-
             - rpm-cache-v7-
       - run:
@@ -63,7 +63,7 @@ jobs:
       - run:
           name: Checkout PHP APCu pecl module
           command: |
-            git https://github.com/aursu/rpmbuild-php-apcu.git
+            git clone https://github.com/aursu/rpmbuild-php-apcu.git
             cd rpmbuild-php-apcu
             git checkout $PHP_APCU_VERSION
       - run:
@@ -88,7 +88,7 @@ jobs:
           name: Build RPM packages
           command: docker-compose up
       - save_cache:
-          key: rpm-cache-v7-{{ checksum "requirements.txt" }}-{{ checksum "SPECS/php.spec" }}
+          key: rpm-cache-v7-{{ checksum "requirements.txt" }}-{{ checksum "SPECS/php-pecl-igbinary.spec" }}
           paths:
             - ~/el6/RPMS
             - ~/el7/RPMS
@@ -149,7 +149,7 @@ jobs:
           no_output_timeout: 2h
       - restore_cache:
           keys:
-            - rpm-cache-v5-{{ checksum "requirements.txt" }}-{{ checksum "SPECS/php.spec" }}
+            - rpm-cache-v5-{{ checksum "requirements.txt" }}-{{ checksum "SPECS/php-pecl-igbinary.spec" }}
             - rpm-cache-v5-{{ checksum "requirements.txt" }}-
             - rpm-cache-v5-
       - run:
@@ -167,7 +167,7 @@ jobs:
       - run:
           name: Checkout PHP APCu pecl module
           command: |
-            git https://github.com/aursu/rpmbuild-php-apcu.git
+            git clone https://github.com/aursu/rpmbuild-php-apcu.git
             cd rpmbuild-php-apcu
             git checkout $PHP_APCU_VERSION
       - run:
@@ -200,14 +200,14 @@ jobs:
             docker cp rpmbuild_webrepo_1:/home/centos-7/rpmbuild/RPMS ~/php5/el7/
             sudo chown -R centos:centos ~/php5/*
       - save_cache:
-          key: rpm-cache-v5-{{ checksum "requirements.txt" }}-{{ checksum "SPECS/php.spec" }}
+          key: rpm-cache-v5-{{ checksum "requirements.txt" }}-{{ checksum "SPECS/php-pecl-igbinary.spec" }}
           paths:
             - ~/php5
       - store_artifacts:
           path: ~/php5
 workflows:
   version: 2
-  apcubuild:
+  igbinarybuild:
     jobs:
       - build
       - build5
