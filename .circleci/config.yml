@@ -1,0 +1,213 @@
+version: 2
+jobs:
+  build:
+    machine:
+      docker_layer_caching: true
+    environment:
+      PHP_APCU_VERSION: 5.1.12-1
+    steps:
+      - run:
+          name: Upgrade Docker CE
+          command: |
+            sudo apt-get update
+            sudo apt-get install docker-ce=18.03.1~ce-0~ubuntu
+      - run:
+          name: Upgrade Docker Compose
+          command: |
+            sudo curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+      - run:
+          name: Create Build User/Group
+          command: |
+            if getent group centos; then
+              sudo groupmod -o -g 48 centos
+            else
+              sudo groupadd -o -g 48 centos
+            fi
+
+            if getent passwd centos; then
+              sudo usermod -o -u 48 -g centos centos
+            else
+              sudo useradd -o -u 48 -g centos -M -d /var/www/html centos
+            fi
+      - checkout
+      - run:
+          name: Git submodules sync
+          command: |
+            git submodule sync
+            git submodule update --init
+      - run:
+          name: Start docker services for rpmbuild
+          command: |
+            docker-compose -f rpmbuild/docker-compose.yml pull
+            docker-compose -f rpmbuild/docker-compose.yml up -d
+          background: true
+          no_output_timeout: 2h
+      - restore_cache:
+          keys:
+            - rpm-cache-v7-{{ checksum "requirements.txt" }}-{{ checksum "SPECS/php.spec" }}
+            - rpm-cache-v7-{{ checksum "requirements.txt" }}-
+            - rpm-cache-v7-
+      - run:
+          name: Restore Repository
+          command: |
+            sleep 30
+            if [ -d ~/el6/RPMS ]; then
+              sudo chown -R centos:centos ~/el6/RPMS
+              docker cp -a ~/el6/RPMS rpmbuild_webrepo_1:/home/centos-6/rpmbuild/
+            fi
+            if [ -d ~/el7/RPMS ]; then
+              sudo chown -R centos:centos ~/el7/RPMS
+              docker cp -a ~/el7/RPMS rpmbuild_webrepo_1:/home/centos-7/rpmbuild/
+            fi
+      - run:
+          name: Checkout PHP APCu pecl module
+          command: |
+            git https://github.com/aursu/rpmbuild-php-apcu.git
+            cd rpmbuild-php-apcu
+            git checkout $PHP_APCU_VERSION
+      - run:
+          name: Build PHP APCu pecl module
+          command: |
+            docker run -ti --rm --net buildnet -u root aursu/rpmbuild:7-build \
+            yum -q list --disablerepo=* --enablerepo custom php-pecl-apcu-devel | grep -q $PHP_APCU_VERSION ||
+            {
+              docker pull aursu/peclbuild:7-apcu
+              docker-compose -f rpmbuild-php-apcu/docker-compose.yml up centos7apcubuild
+            }
+            docker run -ti --rm --net buildnet -u root aursu/rpmbuild:6-build \
+            yum -q list --disablerepo=* --enablerepo custom php-pecl-apcu-devel | grep -q $PHP_APCU_VERSION ||
+            {
+              docker pull aursu/peclbuild:6-apcu
+              docker-compose -f rpmbuild-php-apcu/docker-compose.yml up centos6apcubuild
+            }
+      - run:
+          name: Build Docker images
+          command: docker-compose build --no-cache --pull
+      - run:
+          name: Build RPM packages
+          command: docker-compose up
+      - save_cache:
+          key: rpm-cache-v7-{{ checksum "requirements.txt" }}-{{ checksum "SPECS/php.spec" }}
+          paths:
+            - ~/el6/RPMS
+            - ~/el7/RPMS
+      - run:
+          name: Copy RPM packages
+          command: |
+            sudo rm -rf ~/el6 ~/el7
+            mkdir -p ~/el6 ~/el7
+            docker cp rpmbuild_webrepo_1:/home/centos-6/rpmbuild/RPMS ~/el6/
+            docker cp rpmbuild_webrepo_1:/home/centos-7/rpmbuild/RPMS ~/el7/
+            sudo chown -R centos:centos ~/el6/RPMS ~/el7/RPMS
+      - store_artifacts:
+          path: ~/el6/RPMS
+      - store_artifacts:
+          path: ~/el7/RPMS
+  build5:
+    machine:
+      docker_layer_caching: true
+    environment:
+      PHP_APCU_VERSION: 4.0.11-1
+    steps:
+      - run:
+          name: Upgrade Docker CE
+          command: |
+            sudo apt-get update
+            sudo apt-get install docker-ce=18.03.1~ce-0~ubuntu
+      - run:
+          name: Upgrade Docker Compose
+          command: |
+            sudo curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+      - run:
+          name: Create Build User/Group
+          command: |
+            if getent group centos; then
+              sudo groupmod -o -g 48 centos
+            else
+              sudo groupadd -o -g 48 centos
+            fi
+
+            if getent passwd centos; then
+              sudo usermod -o -u 48 -g centos centos
+            else
+              sudo useradd -o -u 48 -g centos -M -d /var/www/html centos
+            fi
+      - checkout
+      - run:
+          name: Git submodules sync
+          command: |
+            git submodule sync
+            git submodule update --init
+      - run:
+          name: Start docker services for rpmbuild
+          command: |
+            docker-compose -f rpmbuild/docker-compose.yml pull
+            docker-compose -f rpmbuild/docker-compose.yml up -d
+          background: true
+          no_output_timeout: 2h
+      - restore_cache:
+          keys:
+            - rpm-cache-v5-{{ checksum "requirements.txt" }}-{{ checksum "SPECS/php.spec" }}
+            - rpm-cache-v5-{{ checksum "requirements.txt" }}-
+            - rpm-cache-v5-
+      - run:
+          name: Restore Repository
+          command: |
+            sleep 30
+            if [ -d ~/php5/el6/RPMS ]; then
+              sudo chown -R centos:centos ~/php5/el6/RPMS
+              docker cp -a ~/php5/el6/RPMS rpmbuild_webrepo_1:/home/centos-6/rpmbuild/
+            fi
+            if [ -d ~/php5/el7/RPMS ]; then
+              sudo chown -R centos:centos ~/php5/el7/RPMS
+              docker cp -a ~/php5/el7/RPMS rpmbuild_webrepo_1:/home/centos-7/rpmbuild/
+            fi
+      - run:
+          name: Checkout PHP APCu pecl module
+          command: |
+            git https://github.com/aursu/rpmbuild-php-apcu.git
+            cd rpmbuild-php-apcu
+            git checkout $PHP_APCU_VERSION
+      - run:
+          name: Build PHP APCu pecl module
+          command: |
+            docker run -ti --rm --net buildnet -u root aursu/rpmbuild:7-build \
+            yum -q list --disablerepo=* --enablerepo custom php-pecl-apcu-devel | grep -q $PHP_APCU_VERSION ||
+            {
+              docker pull aursu/peclbuild:7-apcu-php5
+              docker-compose -f rpmbuild-php-apcu/docker-compose.php5.yml up centos7apcubuildphp5
+            }
+            docker run -ti --rm --net buildnet -u root aursu/rpmbuild:6-build \
+            yum -q list --disablerepo=* --enablerepo custom php-pecl-apcu-devel | grep -q $PHP_APCU_VERSION ||
+            {
+              docker pull aursu/peclbuild:6-apcu-php5
+              docker-compose -f rpmbuild-php-apcu/docker-compose.php5.yml up centos6apcubuildphp5
+            }
+      - run:
+          name: Build Docker images (PHP 5)
+          command: docker-compose -f docker-compose.php5.yml build --no-cache --pull
+      - run:
+          name: Build RPM packages (PHP 5)
+          command: docker-compose -f docker-compose.php5.yml up
+      - run:
+          name: Copy RPM packages (PHP 5)
+          command: |
+            sudo rm -rf ~/php5
+            mkdir -p ~/php5/el6 ~/php5/el7
+            docker cp rpmbuild_webrepo_1:/home/centos-6/rpmbuild/RPMS ~/php5/el6/
+            docker cp rpmbuild_webrepo_1:/home/centos-7/rpmbuild/RPMS ~/php5/el7/
+            sudo chown -R centos:centos ~/php5/*
+      - save_cache:
+          key: rpm-cache-v5-{{ checksum "requirements.txt" }}-{{ checksum "SPECS/php.spec" }}
+          paths:
+            - ~/php5
+      - store_artifacts:
+          path: ~/php5
+workflows:
+  version: 2
+  apcubuild:
+    jobs:
+      - build
+      - build5

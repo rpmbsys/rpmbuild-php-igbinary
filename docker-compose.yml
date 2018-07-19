@@ -1,0 +1,47 @@
+version: "3.5"
+services:
+  centos7igbinarybuildbase:
+    networks:
+      - buildnet
+    build:
+      context: .
+      network: buildnet
+    image: aursu/peclbuild:7-igbinary-base
+  centos6igbinarybuildbase:
+    networks:
+      - buildnet
+    build:
+      context: .
+      args:
+        centos: 6
+      network: buildnet
+    image: aursu/peclbuild:6-igbinary-base
+  centos7igbinarybuild:
+    volumes:
+      - rpms:/home/centos/rpmbuild/SRPMS
+      - rpm7:/home/centos/rpmbuild/RPMS
+    build:
+      context: .
+    image: aursu/peclbuild:7-igbinary
+  centos6igbinarybuild:
+    volumes:
+      - rpms:/home/centos/rpmbuild/SRPMS
+      - rpm6:/home/centos/rpmbuild/RPMS
+    build:
+      context: .
+      args:
+        centos: 6
+    image: aursu/peclbuild:6-igbinary
+
+networks:
+  buildnet:
+    external: true
+    name: buildnet
+
+volumes:
+  rpms:
+    name: rpms
+  rpm6:
+    name: rpm6
+  rpm7:
+    name: rpm7

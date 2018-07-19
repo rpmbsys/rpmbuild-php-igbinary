@@ -1,0 +1,28 @@
+version: "3.5"
+services:
+  centos6apcubuildphp5:
+    volumes:
+      - rpms:/home/centos/rpmbuild/SRPMS
+      - rpm6:/home/centos/rpmbuild/RPMS
+    build:
+      context: .
+      dockerfile: Dockerfile.php-5
+      args:
+        centos: 6
+    image: aursu/apcubuild:6-php5
+  centos7apcubuildphp5:
+    volumes:
+      - rpms:/home/centos/rpmbuild/SRPMS
+      - rpm7:/home/centos/rpmbuild/RPMS
+    build:
+      context: .
+      dockerfile: Dockerfile.php-5
+    image: aursu/apcubuild:7-php5
+
+volumes:
+  rpms:
+    name: rpms
+  rpm6:
+    name: rpm6
+  rpm7:
+    name: rpm7
