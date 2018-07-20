@@ -5,6 +5,7 @@ services:
       - buildnet
     build:
       context: .
+      dockerfile: Dockerfile.base
       network: buildnet
     image: aursu/peclbuild:7-igbinary-base
   centos6igbinarybuildbase:
@@ -12,6 +13,7 @@ services:
       - buildnet
     build:
       context: .
+      dockerfile: Dockerfile.base
       args:
         centos: 6
       network: buildnet
