@@ -1,23 +1,50 @@
 version: "3.5"
 services:
-  centos6apcubuildphp5:
-    volumes:
-      - rpms:/home/centos/rpmbuild/SRPMS
-      - rpm6:/home/centos/rpmbuild/RPMS
+  centos7igbinarybuildbasephp5:
+    networks:
+      - buildnet
     build:
       context: .
-      dockerfile: Dockerfile.php-5
+      dockerfile: Dockerfile.base
+      args:
+        image: build-php5
+      network: buildnet
+    image: aursu/peclbuild:7-igbinary-base-php5
+  centos6igbinarybuildbasephp5:
+    networks:
+      - buildnet
+    build:
+      context: .
+      dockerfile: Dockerfile.base
       args:
         centos: 6
-    image: aursu/apcubuild:6-php5
-  centos7apcubuildphp5:
+        image: build-php5
+      network: buildnet
+    image: aursu/peclbuild:6-igbinary-base-php5
+  centos7igbinarybuildphp5:
     volumes:
       - rpms:/home/centos/rpmbuild/SRPMS
       - rpm7:/home/centos/rpmbuild/RPMS
     build:
       context: .
-      dockerfile: Dockerfile.php-5
-    image: aursu/apcubuild:7-php5
+      args:
+        image: build-php5
+    image: aursu/peclbuild:7-igbinary-php5
+  centos6igbinarybuildphp5:
+    volumes:
+      - rpms:/home/centos/rpmbuild/SRPMS
+      - rpm6:/home/centos/rpmbuild/RPMS
+    build:
+      context: .
+      args:
+        centos: 6
+        image: build-php5
+    image: aursu/peclbuild:6-igbinary-php5
+
+networks:
+  buildnet:
+    external: true
+    name: buildnet
 
 volumes:
   rpms:
