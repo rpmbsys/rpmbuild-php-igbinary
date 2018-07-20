@@ -100,6 +100,14 @@ jobs:
             docker cp rpmbuild_webrepo_1:/home/centos-6/rpmbuild/RPMS ~/el6/
             docker cp rpmbuild_webrepo_1:/home/centos-7/rpmbuild/RPMS ~/el7/
             sudo chown -R centos:centos ~/el6/RPMS ~/el7/RPMS
+      - run:
+          name: Upload Docker images
+          command: |
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker push aursu/peclbuild:7-igbinary-base
+            docker push aursu/peclbuild:6-igbinary-base
+            docker push aursu/peclbuild:7-igbinary
+            docker push aursu/peclbuild:6-igbinary
       - store_artifacts:
           path: ~/el6/RPMS
       - store_artifacts:
@@ -199,6 +207,14 @@ jobs:
             docker cp rpmbuild_webrepo_1:/home/centos-6/rpmbuild/RPMS ~/php5/el6/
             docker cp rpmbuild_webrepo_1:/home/centos-7/rpmbuild/RPMS ~/php5/el7/
             sudo chown -R centos:centos ~/php5/*
+      - run:
+          name: Upload Docker images (PHP 5)
+          command: |
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker push aursu/peclbuild:7-igbinary-base-php5
+            docker push aursu/peclbuild:6-igbinary-base-php5
+            docker push aursu/peclbuild:7-igbinary-php5
+            docker push aursu/peclbuild:6-igbinary-php5
       - save_cache:
           key: rpm-cache-v5-{{ checksum "requirements.txt" }}-{{ checksum "SPECS/php-pecl-igbinary.spec" }}
           paths:
