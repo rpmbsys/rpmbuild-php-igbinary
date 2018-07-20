@@ -83,7 +83,9 @@ jobs:
             }
       - run:
           name: Build Docker images
-          command: docker-compose build --no-cache --pull
+          command: |
+            sleep 30
+            docker-compose build --no-cache --pull
       - run:
           name: Build RPM packages
           command: docker-compose up
@@ -196,7 +198,9 @@ jobs:
             }
       - run:
           name: Build Docker images (PHP 5)
-          command: docker-compose -f docker-compose.php5.yml build --no-cache --pull
+          command: |
+            sleep 30
+            docker-compose -f docker-compose.php5.yml build --no-cache --pull
       - run:
           name: Build RPM packages (PHP 5)
           command: docker-compose -f docker-compose.php5.yml up
