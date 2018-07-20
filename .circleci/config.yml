@@ -104,6 +104,7 @@ jobs:
           name: Upload Docker images
           command: |
             docker login -u $DOCKER_USER -p $DOCKER_PASS
+            sleep 30
             docker push aursu/peclbuild:7-igbinary-base
             docker push aursu/peclbuild:6-igbinary-base
             docker push aursu/peclbuild:7-igbinary
@@ -211,6 +212,7 @@ jobs:
           name: Upload Docker images (PHP 5)
           command: |
             docker login -u $DOCKER_USER -p $DOCKER_PASS
+            sleep 30
             docker push aursu/peclbuild:7-igbinary-base-php5
             docker push aursu/peclbuild:6-igbinary-base-php5
             docker push aursu/peclbuild:7-igbinary-php5
