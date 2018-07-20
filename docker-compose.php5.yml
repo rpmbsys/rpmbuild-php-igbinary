@@ -28,7 +28,7 @@ services:
     build:
       context: .
       args:
-        image: build-php5
+        image: igbinary-base-php5
     image: aursu/peclbuild:7-igbinary-php5
   centos6igbinarybuildphp5:
     volumes:
@@ -38,7 +38,7 @@ services:
       context: .
       args:
         centos: 6
-        image: build-php5
+        image: igbinary-base-php5
     image: aursu/peclbuild:6-igbinary-php5
 
 networks:
