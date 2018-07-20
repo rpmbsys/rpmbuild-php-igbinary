@@ -25,8 +25,6 @@ services:
     build:
       context: .
     image: aursu/peclbuild:7-igbinary
-    depends_on:
-      - centos7igbinarybuildbase
   centos6igbinarybuild:
     volumes:
       - rpms:/home/centos/rpmbuild/SRPMS
