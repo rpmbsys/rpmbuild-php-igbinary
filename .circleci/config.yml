@@ -5,6 +5,7 @@ jobs:
       docker_layer_caching: true
     environment:
       PHP_APCU_VERSION: 5.1.12-1
+      PACKAGE_VCS_URL: https://github.com/aursu/rpmbuild-php-igbinary
     steps:
       - run:
           name: Upgrade Docker CE
@@ -95,6 +96,14 @@ jobs:
             - ~/el6/RPMS
             - ~/el7/RPMS
       - run:
+          name: Upload RPM packages into Bintray
+          command: |
+            docker-compose -f rpmbuild/docker-compose.bintray.yml run --rm \
+              -e BINTRAY_USER=$BINTRAY_USER \
+              -e BINTRAY_API_KEY=$BINTRAY_API_KEY \
+              -e BINTRAY_REPO=$BINTRAY_REPO \
+              -e PACKAGE_VCS_URL=$PACKAGE_VCS_URL centos7bintray
+      - run:
           name: Copy RPM packages
           command: |
             sudo rm -rf ~/el6 ~/el7
@@ -120,6 +129,7 @@ jobs:
       docker_layer_caching: true
     environment:
       PHP_APCU_VERSION: 4.0.11-3
+      PACKAGE_VCS_URL: https://github.com/aursu/rpmbuild-php-igbinary
     steps:
       - run:
           name: Upgrade Docker CE
@@ -204,6 +214,14 @@ jobs:
       - run:
           name: Build RPM packages (PHP 5)
           command: docker-compose -f docker-compose.php5.yml up
+      - run:
+          name: Upload RPM packages into Bintray
+          command: |
+            docker-compose -f rpmbuild/docker-compose.bintray.yml run --rm \
+              -e BINTRAY_USER=$BINTRAY_USER \
+              -e BINTRAY_API_KEY=$BINTRAY_API_KEY \
+              -e BINTRAY_REPO=$BINTRAY_REPO \
+              -e PACKAGE_VCS_URL=$PACKAGE_VCS_URL centos6bintray
       - run:
           name: Copy RPM packages (PHP 5)
           command: |
