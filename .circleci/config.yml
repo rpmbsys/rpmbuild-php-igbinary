@@ -126,7 +126,7 @@ jobs:
             docker-compose -f rpmbuild/docker-compose.refresh.yml run --rm centos6refresh
       - run:
           name: Build php-pecl-igbinary build Docker images (PHP 5)
-          command: docker-compose -f build/docker-compose.yml build --no-cache --pull
+          command: docker-compose -f build/docker-compose.php5.yml build --no-cache --pull
       - run:
           name: Upload php-pecl-igbinary build Docker images (PHP 5)
           command: |
@@ -185,7 +185,7 @@ jobs:
           name: refresh repositories
           command: docker-compose -f rpmbuild/docker-compose.refresh.yml run --rm centos7refresh
       - run:
-          name: Build php-pecl-igbinary build Docker images (PHP 5)
+          name: Build php-pecl-igbinary build Docker images (PHP 7.3)
           command: docker-compose -f build/docker-compose.php73.yml build --no-cache --pull
       - run:
           name: Upload php-pecl-igbinary build Docker images (PHP 7.3)
