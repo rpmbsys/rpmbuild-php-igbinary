@@ -10,7 +10,7 @@
 %global with_zts   0%{?__ztsphp:1}
 %global ini_name   40-%{pecl_name}.ini
 
-%global upstream_version 2.0.7
+%global upstream_version 2.0.8
 #global upstream_prever  RC1
 
 Summary:        Replacement for the standard PHP serializer
@@ -27,6 +27,7 @@ BuildRequires:  gcc
 BuildRequires:  php-pear
 BuildRequires:  php-devel >= 5.2.0
 BuildRequires:  php-pecl-apcu-devel
+BuildRequires:  php-json
 
 Requires(post): %{__pecl}
 Requires(postun): %{__pecl}
@@ -48,8 +49,8 @@ Provides:       php-pecl(%{pecl_name})%{?_isa} = %{version}
 %description
 Igbinary is a drop in replacement for the standard PHP serializer.
 
-Instead of time and space consuming textual representation, 
-igbinary stores PHP data structures in a compact binary form. 
+Instead of time and space consuming textual representation,
+igbinary stores PHP data structures in a compact binary form.
 Savings are significant when using memcached or similar memory
 based storages for serialized data.
 
@@ -153,6 +154,11 @@ fi
     --define extension=%{buildroot}%{php_extdir}/%{pecl_name}.so \
     --modules | grep %{pecl_name}
 
+# Json used in tests
+if [ -f %{php_extdir}/json.so ]; then
+  MOD="$MOD -d extension=json.so"
+fi
+
 : upstream test suite
 cd NTS
 TEST_PHP_EXECUTABLE=%{_bindir}/php \
@@ -207,6 +213,9 @@ fi
 
 
 %changelog
+* Mon Oct 22 2018 Remi Collet <remi@remirepo.net> - 2.0.8-1
+- update to 2.0.8
+
 * Wed Jun 27 2018 Remi Collet <remi@remirepo.net> - 2.0.7-1
 - update to 2.0.7
 
