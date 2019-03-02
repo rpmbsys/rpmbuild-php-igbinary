@@ -1,6 +1,6 @@
 version: "3.5"
 services:
-  centos7apcuphp73build:
+  centos7igbinaryphp73build:
     networks:
       - buildnet
     build:
