@@ -4,6 +4,7 @@ jobs:
     machine:
       docker_layer_caching: true
     environment:
+      BINTRAY_REPO: php71custom
       PACKAGE_VCS_URL: https://github.com/aursu/rpmbuild-php-igbinary
     steps:
       - run:
@@ -14,7 +15,7 @@ jobs:
       - run:
           name: Upgrade Docker Compose
           command: |
-            sudo curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+            sudo curl -L https://github.com/docker/compose/releases/download/1.23.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
             sudo chmod +x /usr/local/bin/docker-compose
       - checkout
       - run:
@@ -81,7 +82,7 @@ jobs:
       - run:
           name: Upgrade Docker Compose
           command: |
-            sudo curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+            sudo curl -L https://github.com/docker/compose/releases/download/1.23.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
             sudo chmod +x /usr/local/bin/docker-compose
       - checkout
       - run:
@@ -148,7 +149,7 @@ jobs:
       - run:
           name: Upgrade Docker Compose
           command: |
-            sudo curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+            sudo curl -L https://github.com/docker/compose/releases/download/1.23.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
             sudo chmod +x /usr/local/bin/docker-compose
       - checkout
       - run:
