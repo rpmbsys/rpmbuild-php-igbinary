@@ -18,33 +18,28 @@
 #global upstream_prever  RC1
 
 Summary:        Replacement for the standard PHP serializer
-Name:           php-pecl-igbinary
+Name:           php7-pecl-igbinary
 Version:        %{upstream_version}%{?upstream_prever:~%{upstream_prever}}
 Release:        1%{?dist}
 Source0:        http://pecl.php.net/get/%{pecl_name}-%{upstream_version}%{?upstream_prever}.tgz
 License:        BSD
+Group:          System Environment/Libraries
 
 URL:            http://pecl.php.net/package/igbinary
 
 BuildRequires:  gcc
-BuildRequires:  php-pear
-BuildRequires:  php-devel >= 7
-BuildRequires:  php-pecl-apcu-devel
-BuildRequires:  php-json
+BuildRequires:  php7-pear
+BuildRequires:  php7-devel >= 7
+BuildConflicts: php-devel
+BuildRequires:  php7-pecl-apcu-devel
 
 Requires:       php(zend-abi) = %{php_zend_api}
 Requires:       php(api) = %{php_core_api}
 
-%if 0%{?fedora} < 20 && 0%{?rhel} < 7
-# Filter shared private
-%{?filter_provides_in: %filter_provides_in %{_libdir}/.*\.so$}
-%{?filter_setup}
-%endif
+Provides:       php7-%{pecl_name} = %{version}
+Provides:       php7-%{pecl_name}%{?_isa} = %{version}
 
-Provides:       php-%{pecl_name} = %{version}
-Provides:       php-%{pecl_name}%{?_isa} = %{version}
-Provides:       php-pecl(%{pecl_name}) = %{version}
-Provides:       php-pecl(%{pecl_name})%{?_isa} = %{version}
+Autoreq: 0
 
 
 %description
@@ -58,8 +53,10 @@ based storages for serialized data.
 
 %package devel
 Summary:       Igbinary developer files (header)
-Requires:      php-pecl-%{pecl_name}%{?_isa} = %{version}-%{release}
-Requires:      php-devel%{?_isa}
+Group:         Development/Libraries
+Requires:      php7-pecl-%{pecl_name}%{?_isa} = %{version}-%{release}
+Requires:      php7-devel%{?_isa}
+Autoreq: 0
 
 %description devel
 These are the files needed to compile programs using Igbinary
@@ -82,9 +79,6 @@ if test "x${extver}" != "x%{upstream_version}%{?upstream_prever}"; then
 fi
 cd ..
 
-%if %{with_zts}
-cp -r NTS ZTS
-%endif
 
 cat <<EOF | tee %{ini_name}
 ; Enable %{pecl_name} extension module
@@ -104,16 +98,9 @@ EOF
 
 %build
 cd NTS
-%{_bindir}/phpize
-%configure --with-php-config=%{_bindir}/php-config
+%{_bindir}/phpize7
+%configure --with-php-config=%{_bindir}/php7-config
 make %{?_smp_mflags}
-
-%if %{with_zts}
-cd ../ZTS
-%{_bindir}/zts-phpize
-%configure --with-php-config=%{_bindir}/zts-php-config
-make %{?_smp_mflags}
-%endif
 
 
 %install
@@ -122,12 +109,6 @@ make install -C NTS INSTALL_ROOT=%{buildroot}
 install -D -m 644 package.xml %{buildroot}%{pecl_xmldir}/%{name}.xml
 
 install -D -m 644 %{ini_name} %{buildroot}%{php_inidir}/%{ini_name}
-
-# Install the ZTS stuff
-%if %{with_zts}
-make install -C ZTS INSTALL_ROOT=%{buildroot}
-install -D -m 644 %{ini_name} %{buildroot}%{php_ztsinidir}/%{ini_name}
-%endif
 
 # Test & Documentation
 cd NTS
@@ -145,7 +126,7 @@ done
 sed -e '/^extension=/d' -i ?TS/tests/*phpt
 
 : simple NTS module load test, without APC, as optional
-%{_bindir}/php --no-php-ini \
+%{_bindir}/php7 --no-php-ini \
     --define extension=%{buildroot}%{php_extdir}/%{pecl_name}.so \
     --modules | grep %{pecl_name}
 
@@ -153,34 +134,17 @@ sed -e '/^extension=/d' -i ?TS/tests/*phpt
 if [ -f %{php_extdir}/apcu.so ]; then
   MOD="-d extension=apcu.so"
 fi
-# Json used in tests
 if [ -f %{php_extdir}/json.so ]; then
   MOD="$MOD -d extension=json.so"
 fi
 
 : upstream test suite
 cd NTS
-TEST_PHP_EXECUTABLE=%{_bindir}/php \
+TEST_PHP_EXECUTABLE=%{_bindir}/php7 \
 TEST_PHP_ARGS="-n $MOD -d extension=$PWD/modules/%{pecl_name}.so" \
 NO_INTERACTION=1 \
 REPORT_EXIT_STATUS=1 \
-%{_bindir}/php -n run-tests.php --show-diff
-
-%if %{with_zts}
-: simple ZTS module load test, without APC, as optional
-%{__ztsphp} --no-php-ini \
-    --define extension=%{buildroot}%{php_ztsextdir}/%{pecl_name}.so \
-    --modules | grep %{pecl_name}
-
-: upstream test suite
-cd ../ZTS
-TEST_PHP_EXECUTABLE=%{__ztsphp} \
-TEST_PHP_ARGS="-n $MOD -d extension=$PWD/modules/%{pecl_name}.so" \
-NO_INTERACTION=1 \
-REPORT_EXIT_STATUS=1 \
-%{__ztsphp} -n run-tests.php --show-diff
-%endif
-
+%{_bindir}/php7 -n run-tests.php --show-diff
 
 %files
 %doc %{pecl_docdir}/%{pecl_name}
@@ -188,19 +152,9 @@ REPORT_EXIT_STATUS=1 \
 %{php_extdir}/%{pecl_name}.so
 %{pecl_xmldir}/%{name}.xml
 
-%if %{with_zts}
-%config(noreplace) %{php_ztsinidir}/%{ini_name}
-%{php_ztsextdir}/%{pecl_name}.so
-%endif
-
-
 %files devel
 %doc %{pecl_testdir}/%{pecl_name}
 %{php_incldir}/ext/%{pecl_name}
-
-%if %{with_zts}
-%{php_ztsincldir}/ext/%{pecl_name}
-%endif
 
 
 %changelog
@@ -360,4 +314,3 @@ REPORT_EXIT_STATUS=1 \
 
 * Wed Sep 29 2010 Remi Collet <rpms@famillecollet.com> 1.0.2-1
 - initital RPM
-
