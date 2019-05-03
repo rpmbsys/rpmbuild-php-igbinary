@@ -39,9 +39,6 @@ Requires:       php(api) = %{php_core_api}
 Provides:       php7-%{pecl_name} = %{version}
 Provides:       php7-%{pecl_name}%{?_isa} = %{version}
 
-Autoreq: 0
-
-
 %description
 Igbinary is a drop in replacement for the standard PHP serializer.
 
@@ -56,7 +53,6 @@ Summary:       Igbinary developer files (header)
 Group:         Development/Libraries
 Requires:      php7-pecl-%{pecl_name}%{?_isa} = %{version}-%{release}
 Requires:      php7-devel%{?_isa}
-Autoreq: 0
 
 %description devel
 These are the files needed to compile programs using Igbinary

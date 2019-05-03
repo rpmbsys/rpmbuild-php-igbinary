@@ -1,0 +1,5 @@
+FROM aursu/pearbuild:7-php7-7.1
+
+RUN yum -y --disablerepo=* --enablerepo=custom install \
+        php7-pecl-igbinary-devel \
+    && yum clean all && rm -rf /var/cache/yum
