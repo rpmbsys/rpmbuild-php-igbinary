@@ -36,7 +36,9 @@ BuildRequires:  php7-pecl-apcu-devel
 Requires:       php(zend-abi) = %{php_zend_api}
 Requires:       php(api) = %{php_core_api}
 
+Provides:       php-%{pecl_name} = %{version}
 Provides:       php7-%{pecl_name} = %{version}
+Provides:       php-%{pecl_name}%{?_isa} = %{version}
 Provides:       php7-%{pecl_name}%{?_isa} = %{version}
 
 %description
