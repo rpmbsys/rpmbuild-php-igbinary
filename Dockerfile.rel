@@ -1,4 +1,7 @@
-FROM aursu/peclbuild:7-php7-apcu-7.1
+ARG centos=7
+ARG image=php7-apcu-7.1
+
+FROM aursu/peclbuild:${centos}-${image}
 
 COPY SOURCES ${BUILD_TOPDIR}/SOURCES
 COPY SPECS ${BUILD_TOPDIR}/SPECS

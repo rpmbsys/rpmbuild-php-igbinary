@@ -1,2 +1,0 @@
-php-pecl-apcu-5.1.12-1
-php-pecl-apcu-4.0.11-3

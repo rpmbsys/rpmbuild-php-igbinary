@@ -1,16 +1,20 @@
 # Fedora spec file for php-pecl-igbinary
 #
-# Copyright (c) 2010-2018 Remi Collet
+# Copyright (c) 2010-2019 Remi Collet
 # License: CC-BY-SA
 # http://creativecommons.org/licenses/by-sa/4.0/
 #
 # Please, preserve the changelog entries
 #
+
+# we don't want -z defs linker flag
+%undefine _strict_symbol_defs_build
+
 %global pecl_name  igbinary
 %global with_zts   0%{?__ztsphp:1}
 %global ini_name   40-%{pecl_name}.ini
 
-%global upstream_version 2.0.8
+%global upstream_version 3.0.0
 #global upstream_prever  RC1
 
 Summary:        Replacement for the standard PHP serializer
@@ -19,18 +23,15 @@ Version:        %{upstream_version}%{?upstream_prever:~%{upstream_prever}}
 Release:        1%{?dist}
 Source0:        http://pecl.php.net/get/%{pecl_name}-%{upstream_version}%{?upstream_prever}.tgz
 License:        BSD
-Group:          System Environment/Libraries
 
 URL:            http://pecl.php.net/package/igbinary
 
 BuildRequires:  gcc
 BuildRequires:  php-pear
-BuildRequires:  php-devel >= 5.2.0
+BuildRequires:  php-devel >= 7
 BuildRequires:  php-pecl-apcu-devel
 BuildRequires:  php-json
 
-Requires(post): %{__pecl}
-Requires(postun): %{__pecl}
 Requires:       php(zend-abi) = %{php_zend_api}
 Requires:       php(api) = %{php_core_api}
 
@@ -57,7 +58,6 @@ based storages for serialized data.
 
 %package devel
 Summary:       Igbinary developer files (header)
-Group:         Development/Libraries
 Requires:      php-pecl-%{pecl_name}%{?_isa} = %{version}-%{release}
 Requires:      php-devel%{?_isa}
 
@@ -144,16 +144,15 @@ done
 # drop extension load from phpt
 sed -e '/^extension=/d' -i ?TS/tests/*phpt
 
-# APC required for test 045
-if [ -f %{php_extdir}/apcu.so ]; then
-  MOD="-d extension=apcu.so"
-fi
-
 : simple NTS module load test, without APC, as optional
 %{_bindir}/php --no-php-ini \
     --define extension=%{buildroot}%{php_extdir}/%{pecl_name}.so \
     --modules | grep %{pecl_name}
 
+# APC required for test 045
+if [ -f %{php_extdir}/apcu.so ]; then
+  MOD="-d extension=apcu.so"
+fi
 # Json used in tests
 if [ -f %{php_extdir}/json.so ]; then
   MOD="$MOD -d extension=json.so"
@@ -182,16 +181,8 @@ REPORT_EXIT_STATUS=1 \
 %{__ztsphp} -n run-tests.php --show-diff
 %endif
 
-%post
-%{pecl_install} %{pecl_xmldir}/%{name}.xml >/dev/null || :
-
-%postun
-if [ $1 -eq 0 ] ; then
-    %{pecl_uninstall} %{extname} >/dev/null || :
-fi
 
 %files
-%{?_licensedir:%license NTS/COPYING}
 %doc %{pecl_docdir}/%{pecl_name}
 %config(noreplace) %{php_inidir}/%{ini_name}
 %{php_extdir}/%{pecl_name}.so
@@ -213,8 +204,22 @@ fi
 
 
 %changelog
+* Mon Feb 18 2019 Remi Collet <remi@remirepo.net> - 3.0.0-1
+- update to 3.0.0
+- no API change
+- raise dependency on PHP 7
+
+* Sat Feb 02 2019 Fedora Release Engineering <releng@fedoraproject.org> - 2.0.8-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
+
 * Mon Oct 22 2018 Remi Collet <remi@remirepo.net> - 2.0.8-1
 - update to 2.0.8
+
+* Thu Oct 11 2018 Remi Collet <remi@remirepo.net> - 2.0.7-3
+- Rebuild for https://fedoraproject.org/wiki/Changes/php73
+
+* Fri Jul 13 2018 Fedora Release Engineering <releng@fedoraproject.org> - 2.0.7-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
 
 * Wed Jun 27 2018 Remi Collet <remi@remirepo.net> - 2.0.7-1
 - update to 2.0.7
@@ -222,8 +227,20 @@ fi
 * Sun May 13 2018 Remi Collet <remi@remirepo.net> - 2.0.6-1
 - update to 2.0.6 (stable)
 
+* Fri Feb 09 2018 Fedora Release Engineering <releng@fedoraproject.org> - 2.0.5-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_28_Mass_Rebuild
+
+* Fri Jan 26 2018 Remi Collet <remi@remirepo.net> - 2.0.5-2
+- undefine _strict_symbol_defs_build
+
 * Mon Nov  6 2017 Remi Collet <remi@remirepo.net> - 2.0.5-1
 - update to 2.0.5 (stable)
+
+* Mon Oct 16 2017 Remi Collet <remi@remirepo.net> - 2.0.5~RC1-1
+- update to 2.0.5RC1 (beta)
+
+* Tue Oct 03 2017 Remi Collet <remi@fedoraproject.org> - 2.0.4-4
+- rebuild for https://fedoraproject.org/wiki/Changes/php72
 
 * Thu Aug 03 2017 Fedora Release Engineering <releng@fedoraproject.org> - 2.0.4-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Binutils_Mass_Rebuild

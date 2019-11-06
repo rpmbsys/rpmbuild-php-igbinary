@@ -1,0 +1,41 @@
+version: "3.5"
+services:
+  centos7igbinaryphp7build:
+    networks:
+      - buildnet
+    build:
+      context: .
+      network: buildnet
+    image: aursu/peclbuild:7-php-igbinary-7.1
+  centos7igbinaryphp7buildrel:
+    networks:
+      - buildnet
+    build:
+      context: .
+      dockerfile: Dockerfile.rel
+      network: buildnet
+    image: aursu/peclbuild:7-php7-igbinary-7.1
+  centos8igbinaryphp7build:
+    networks:
+      - buildnet
+    build:
+      context: .
+      args:
+        centos: 8
+      network: buildnet
+    image: aursu/peclbuild:8-php-igbinary-7.1
+  centos8igbinaryphp7buildrel:
+    networks:
+      - buildnet
+    build:
+      context: .
+      args:
+        centos: 8
+      dockerfile: Dockerfile.rel
+      network: buildnet
+    image: aursu/peclbuild:8-php7-igbinary-7.1
+
+networks:
+  buildnet:
+    external: true
+    name: buildnet
