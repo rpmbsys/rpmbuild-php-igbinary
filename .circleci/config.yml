@@ -1,124 +1,93 @@
-version: 2
-jobs:
-  build71:
-    machine:
-      image: ubuntu-1604:201903-01
-    environment:
-      BINTRAY_REPO: php71custom
-      PACKAGE_VCS_URL: https://github.com/aursu/rpmbuild-php-igbinary
-    steps:
-      - checkout
-      - run:
-          name: Git submodules sync
-          command: |
-            git submodule sync
-            git submodule update --init
-      - run:
-          name: Pull images for RPM build docker services
-          command: |
-            docker-compose -f rpmbuild/docker-compose.yml pull
-            docker-compose -f rpmbuild/docker-compose.bintray.yml pull
-            docker-compose -f rpmbuild/docker-compose.refresh.yml pull
-      - run:
-          name: Start docker services for rpmbuild
-          command: docker-compose -f rpmbuild/docker-compose.yml up -d
-          background: true
-          no_output_timeout: 2h
-      - run:
-          name: Build Docker images
-          command: docker-compose build --no-cache --pull
-      - run:
-          name: Build RPM packages
-          command: docker-compose up
-      - run:
-          name: Upload RPM packages into Bintray
-          command: |
-            docker-compose -f rpmbuild/docker-compose.bintray.yml run --rm \
-              -e BINTRAY_USER=$BINTRAY_USER \
-              -e BINTRAY_API_KEY=$BINTRAY_API_KEY \
-              -e BINTRAY_REPO=$BINTRAY_REPO \
-              -e PACKAGE_VCS_URL=$PACKAGE_VCS_URL centos7bintray
-            docker-compose -f rpmbuild/docker-compose.bintray.yml run --rm \
-              -e BINTRAY_USER=$BINTRAY_USER \
-              -e BINTRAY_API_KEY=$BINTRAY_API_KEY \
-              -e BINTRAY_REPO=$BINTRAY_REPO \
-              -e PACKAGE_VCS_URL=$PACKAGE_VCS_URL centos8bintray
-      - run:
-          name: refresh repositories
-          command: |
-            docker-compose -f rpmbuild/docker-compose.refresh.yml run --rm centos7refresh
-            docker-compose -f rpmbuild/docker-compose.refresh.yml run --rm centos8refresh
-      - run:
-          name: Build php-pecl-igbinary build Docker images
-          command: docker-compose -f build/php71/docker-compose.yml build --no-cache --pull
-      - run:
-          name: Upload php-pecl-igbinary build Docker images
-          command: |
-            docker login -u $DOCKER_USER -p $DOCKER_PASS
-            docker push aursu/peclbuild:7-php-igbinary-7.1
-            docker push aursu/peclbuild:7-php7-igbinary-7.1
-            docker push aursu/peclbuild:8-php-igbinary-7.1
-            docker push aursu/peclbuild:8-php7-igbinary-7.1
-  build73:
-    machine:
-      image: ubuntu-1604:201903-01
-    environment:
-      BINTRAY_REPO: php73custom
-      PACKAGE_VCS_URL: https://github.com/aursu/rpmbuild-php-igbinary
-    steps:
-      - checkout
-      - run:
-          name: Git submodules sync
-          command: |
-            git submodule sync
-            git submodule update --init
-      - run:
-          name: Pull images for RPM build docker services
-          command: |
-            docker-compose -f rpmbuild/docker-compose.yml pull
-            docker-compose -f rpmbuild/docker-compose.bintray.yml pull
-            docker-compose -f rpmbuild/docker-compose.refresh.yml pull
-      - run:
-          name: Start docker services for rpmbuild
-          command: docker-compose -f rpmbuild/docker-compose.yml up -d
-          background: true
-          no_output_timeout: 2h
-      - run:
-          name: Build Docker images (PHP 7.3)
-          command: docker-compose -f docker-compose.php73.yml build --no-cache --pull
-      - run:
-          name: Build RPM packages (PHP 7.3)
-          command: docker-compose -f docker-compose.php73.yml up
-      - run:
-          name: Upload RPM packages into Bintray
-          command: |
-            docker-compose -f rpmbuild/docker-compose.bintray.yml run --rm \
-              -e BINTRAY_USER=$BINTRAY_USER \
-              -e BINTRAY_API_KEY=$BINTRAY_API_KEY \
-              -e BINTRAY_REPO=$BINTRAY_REPO \
-              -e PACKAGE_VCS_URL=$PACKAGE_VCS_URL centos7bintray
-            docker-compose -f rpmbuild/docker-compose.bintray.yml run --rm \
-              -e BINTRAY_USER=$BINTRAY_USER \
-              -e BINTRAY_API_KEY=$BINTRAY_API_KEY \
-              -e BINTRAY_REPO=$BINTRAY_REPO \
-              -e PACKAGE_VCS_URL=$PACKAGE_VCS_URL centos8bintray
-      - run:
-          name: refresh repositories
-          command: |
-            docker-compose -f rpmbuild/docker-compose.refresh.yml run --rm centos7refresh
-            docker-compose -f rpmbuild/docker-compose.refresh.yml run --rm centos8refresh
-      - run:
-          name: Build php-pecl-igbinary build Docker images (PHP 7.3)
-          command: docker-compose -f build/php73/docker-compose.yml build --no-cache --pull
-      - run:
-          name: Upload php-pecl-igbinary build Docker images (PHP 7.3)
-          command: |
-            docker login -u $DOCKER_USER -p $DOCKER_PASS
-            docker push aursu/peclbuild:7-php-igbinary-7.3
-            docker push aursu/peclbuild:8-php-igbinary-7.3
+version: 2.1
+
+orbs:
+  docker-rpmbuild: aursu/rpmbuild@1.1.0
+
 workflows:
-  version: 2
   igbinarybuild:
     jobs:
-      - build71
-      - build73
+      - docker-rpmbuild/build:
+          name: centos7igbinary
+          build_service: centos7igbinary
+          bintray_uploader: centos7bintray
+      - docker-rpmbuild/build:
+          name: centos7igbinaryrel
+          build_service: centos7igbinaryrel
+          bintray_uploader: centos7bintray
+      - docker-rpmbuild/build:
+          name: centos8igbinary
+          build_service: centos8igbinary
+          bintray_uploader: centos8bintray
+      - docker-rpmbuild/build:
+          name: centos8igbinaryrel
+          build_service: centos8igbinaryrel
+          bintray_uploader: centos8bintray
+      - docker-rpmbuild/build:
+          name: centos7igbinaryphp73
+          build_file: docker-compose.php73.yml
+          build_service: centos7igbinaryphp73
+          bintray_uploader: centos7bintray
+      - docker-rpmbuild/build:
+          name: centos8igbinaryphp73
+          build_file: docker-compose.php73.yml
+          build_service: centos8igbinaryphp73
+          bintray_uploader: centos8bintray
+      - docker-rpmbuild/build:
+          name: centos7igbinaryphp74
+          build_file: docker-compose.php74.yml
+          build_service: centos7igbinaryphp74
+          bintray_uploader: centos7bintray
+      - docker-rpmbuild/build:
+          name: centos8igbinaryphp74
+          build_file: docker-compose.php74.yml
+          build_service: centos8igbinaryphp74
+          bintray_uploader: centos8bintray
+      - docker-rpmbuild/image:
+          name: centos7igbinaryphp7build
+          compose_file: build/php71/docker-compose.yml
+          build_service: centos7igbinaryphp7build
+          requires:
+            - centos7igbinary
+      - docker-rpmbuild/image:
+          name: centos7igbinaryphp7buildrel
+          compose_file: build/php71/docker-compose.yml
+          build_service: centos7igbinaryphp7buildrel
+          requires:
+            - centos7igbinaryrel
+      - docker-rpmbuild/image:
+          name: centos8igbinaryphp7build
+          compose_file: build/php71/docker-compose.yml
+          build_service: centos8igbinaryphp7build
+          requires:
+            - centos8igbinary
+      - docker-rpmbuild/image:
+          name: centos8igbinaryphp7buildrel
+          compose_file: build/php71/docker-compose.yml
+          build_service: centos8igbinaryphp7buildrel
+          requires:
+            - centos8igbinaryrel
+      - docker-rpmbuild/image:
+          name: centos7igbinaryphp73build
+          compose_file: build/php73/docker-compose.yml
+          build_service: centos7igbinaryphp73build
+          requires:
+            - centos7igbinaryphp73
+      - docker-rpmbuild/image:
+          name: centos8igbinaryphp73build
+          compose_file: build/php73/docker-compose.yml
+          build_service: centos8igbinaryphp73build
+          requires:
+            - centos8igbinaryphp73
+      - docker-rpmbuild/image:
+          name: centos7igbinaryphp74build
+          compose_file: build/php74/docker-compose.yml
+          build_service: centos7igbinaryphp74build
+          requires:
+            - centos7igbinaryphp74
+      - docker-rpmbuild/image:
+          name: centos8igbinaryphp74build
+          compose_file: build/php74/docker-compose.yml
+          build_service: centos8igbinaryphp74build
+          requires:
+            - centos8igbinaryphp74
+
