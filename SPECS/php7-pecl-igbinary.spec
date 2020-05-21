@@ -1,6 +1,6 @@
 # Fedora spec file for php-pecl-igbinary
 #
-# Copyright (c) 2010-2019 Remi Collet
+# Copyright (c) 2010-2020 Remi Collet
 # License: CC-BY-SA
 # http://creativecommons.org/licenses/by-sa/4.0/
 #
@@ -14,18 +14,18 @@
 %global with_zts   0%{?__ztsphp:1}
 %global ini_name   40-%{pecl_name}.ini
 
-%global upstream_version 3.0.1
+%global upstream_version 3.1.1
 #global upstream_prever  RC1
 
 Summary:        Replacement for the standard PHP serializer
 Name:           php7-pecl-igbinary
 Version:        %{upstream_version}%{?upstream_prever:~%{upstream_prever}}
 Release:        1%{?dist}
-Source0:        http://pecl.php.net/get/%{pecl_name}-%{upstream_version}%{?upstream_prever}.tgz
+Source0:        https://pecl.php.net/get/%{pecl_name}-%{upstream_version}%{?upstream_prever}.tgz
 License:        BSD
 Group:          System Environment/Libraries
 
-URL:            http://pecl.php.net/package/igbinary
+URL:            https://pecl.php.net/package/igbinary
 
 BuildRequires:  gcc
 BuildRequires:  php7-pear
@@ -156,6 +156,9 @@ REPORT_EXIT_STATUS=1 \
 
 
 %changelog
+* Fri Jan 17 2020 Remi Collet <remi@remirepo.net> - 3.1.1-1
+- update to 3.1.1
+
 * Thu Mar 21 2019 Remi Collet <remi@remirepo.net> - 3.0.1-1
 - update to 3.0.1 (no change)
 
