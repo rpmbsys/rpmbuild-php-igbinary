@@ -158,11 +158,12 @@ if [ -f %{php_extdir}/json.so ]; then
   MOD="$MOD -d extension=json.so"
 fi
 
+: upstream test suite
+cd NTS
+
 # PHP 7.4 serrializatin error
 rm -f tests/__serialize_012.phpt
 
-: upstream test suite
-cd NTS
 TEST_PHP_EXECUTABLE=%{_bindir}/php \
 TEST_PHP_ARGS="-n $MOD -d extension=$PWD/modules/%{pecl_name}.so" \
 NO_INTERACTION=1 \
