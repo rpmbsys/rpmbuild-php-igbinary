@@ -1,26 +1,16 @@
 version: "3.5"
 services:
   centos7igbinaryphp74build:
-    networks:
-      - buildnet
     build:
-      network: buildnet
       context: .
       args:
+        centos: $OS7
         image: php-7.4
-    image: aursu/peclbuild:7-php-igbinary-7.4
+    image: aursu/peclbuild:${OS7TAG}-php-igbinary-7.4
   centos8igbinaryphp74build:
-    networks:
-      - buildnet
     build:
-      network: buildnet
       context: .
       args:
-        centos: 8
+        centos: $OS8
         image: php-7.4
-    image: aursu/peclbuild:8-php-igbinary-7.4
-
-networks:
-  buildnet:
-    external: true
-    name: buildnet
+    image: aursu/peclbuild:${OS8TAG}-php-igbinary-7.4
