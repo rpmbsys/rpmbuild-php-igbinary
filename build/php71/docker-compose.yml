@@ -1,25 +1,25 @@
 version: "3.5"
 services:
-  centos7igbinaryphp7build:
+  centos7igbinaryphp71build:
     build:
       context: .
       args:
         centos: 7.8.2003
     image: aursu/peclbuild:7.8.2003-php-igbinary-7.1
-  centos7igbinaryphp7buildrel:
+  centos7igbinaryphp71buildrel:
     build:
       context: .
       dockerfile: Dockerfile.rel
       args:
         centos: 7.8.2003
     image: aursu/peclbuild:7.8.2003-php7-igbinary-7.1
-  centos8igbinaryphp7build:
+  centos8igbinaryphp71build:
     build:
       context: .
       args:
         centos: 8.2.2004
     image: aursu/peclbuild:8.2.2004-php-igbinary-7.1
-  centos8igbinaryphp7buildrel:
+  centos8igbinaryphp71buildrel:
     build:
       context: .
       dockerfile: Dockerfile.rel
