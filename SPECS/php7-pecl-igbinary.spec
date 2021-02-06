@@ -1,6 +1,6 @@
 # Fedora spec file for php-pecl-igbinary
 #
-# Copyright (c) 2010-2020 Remi Collet
+# Copyright (c) 2010-2021 Remi Collet
 # License: CC-BY-SA
 # http://creativecommons.org/licenses/by-sa/4.0/
 #
@@ -14,7 +14,7 @@
 %global with_zts   0%{?__ztsphp:1}
 %global ini_name   40-%{pecl_name}.ini
 
-%global upstream_version 3.1.1
+%global upstream_version 3.2.1
 #global upstream_prever  RC1
 
 Summary:        Replacement for the standard PHP serializer
@@ -23,13 +23,12 @@ Version:        %{upstream_version}%{?upstream_prever:~%{upstream_prever}}
 Release:        1%{?dist}
 Source0:        https://pecl.php.net/get/%{pecl_name}-%{upstream_version}%{?upstream_prever}.tgz
 License:        BSD
-Group:          System Environment/Libraries
 
 URL:            https://pecl.php.net/package/igbinary
 
 BuildRequires:  gcc
 BuildRequires:  php7-pear
-BuildRequires:  php7-devel >= 7
+BuildRequires:  php7-devel >= 7.0
 BuildConflicts: php-devel
 BuildRequires:  php7-pecl-apcu-devel
 
@@ -49,16 +48,13 @@ igbinary stores PHP data structures in a compact binary form.
 Savings are significant when using memcached or similar memory
 based storages for serialized data.
 
-
 %package devel
 Summary:       Igbinary developer files (header)
-Group:         Development/Libraries
 Requires:      php7-pecl-%{pecl_name}%{?_isa} = %{version}-%{release}
 Requires:      php7-devel%{?_isa}
 
 %description devel
 These are the files needed to compile programs using Igbinary
-
 
 %prep
 %setup -q -c
@@ -77,7 +73,6 @@ if test "x${extver}" != "x%{upstream_version}%{?upstream_prever}"; then
 fi
 cd ..
 
-
 cat <<EOF | tee %{ini_name}
 ; Enable %{pecl_name} extension module
 extension=%{pecl_name}.so
@@ -93,13 +88,11 @@ extension=%{pecl_name}.so
 ;apc.serializer=igbinary
 EOF
 
-
 %build
 cd NTS
 %{_bindir}/phpize7
 %configure --with-php-config=%{_bindir}/php7-config
 make %{?_smp_mflags}
-
 
 %install
 make install -C NTS INSTALL_ROOT=%{buildroot}
@@ -118,8 +111,8 @@ for i in $(grep 'role="doc"' ../package.xml | sed -e 's/^.*name="//;s/".*$//')
 do install -Dpm 644 $i %{buildroot}%{pecl_docdir}/%{pecl_name}/$i
 done
 
-
 %check
+MOD=""
 # drop extension load from phpt
 sed -e '/^extension=/d' -i ?TS/tests/*phpt
 
@@ -146,7 +139,7 @@ TEST_PHP_EXECUTABLE=%{_bindir}/php7 \
 TEST_PHP_ARGS="-n $MOD -d extension=$PWD/modules/%{pecl_name}.so" \
 NO_INTERACTION=1 \
 REPORT_EXIT_STATUS=1 \
-%{_bindir}/php7 -n run-tests.php --show-diff
+%{_bindir}/php7 -n run-tests.php -x --show-diff
 
 %files
 %doc %{pecl_docdir}/%{pecl_name}
@@ -158,8 +151,10 @@ REPORT_EXIT_STATUS=1 \
 %doc %{pecl_testdir}/%{pecl_name}
 %{php_incldir}/ext/%{pecl_name}
 
-
 %changelog
+* Mon Jan  4 2021 Remi Collet <remi@remirepo.net> - 3.2.1-1
+- update to 3.2.1
+
 * Fri Jan 17 2020 Remi Collet <remi@remirepo.net> - 3.1.1-1
 - update to 3.1.1
 

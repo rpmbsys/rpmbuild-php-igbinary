@@ -4,25 +4,25 @@ services:
     build:
       context: .
       args:
-        centos: $OS7
-    image: aursu/peclbuild:${OS7TAG}-php-igbinary-7.1
+        centos: 7.8.2003
+    image: aursu/peclbuild:7.8.2003-php-igbinary-7.1
   centos7igbinaryphp7buildrel:
     build:
       context: .
       dockerfile: Dockerfile.rel
       args:
-        centos: $OS7
-    image: aursu/peclbuild:${OS7TAG}-php7-igbinary-7.1
+        centos: 7.8.2003
+    image: aursu/peclbuild:7.8.2003-php7-igbinary-7.1
   centos8igbinaryphp7build:
     build:
       context: .
       args:
-        centos: $OS8
-    image: aursu/peclbuild:${OS8TAG}-php-igbinary-7.1
+        centos: 8.2.2004
+    image: aursu/peclbuild:8.2.2004-php-igbinary-7.1
   centos8igbinaryphp7buildrel:
     build:
       context: .
       dockerfile: Dockerfile.rel
       args:
-        centos: $OS8
-    image: aursu/peclbuild:${OS8TAG}-php7-igbinary-7.1
+        centos: 8.2.2004
+    image: aursu/peclbuild:8.2.2004-php7-igbinary-7.1

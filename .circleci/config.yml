@@ -11,16 +11,8 @@ workflows:
           build_service: centos7igbinary
           bintray_uploader: centos7bintray
       - docker-rpmbuild/build:
-          name: centos7igbinaryrel
-          build_service: centos7igbinaryrel
-          bintray_uploader: centos7bintray
-      - docker-rpmbuild/build:
           name: centos8igbinary
           build_service: centos8igbinary
-          bintray_uploader: centos8bintray
-      - docker-rpmbuild/build:
-          name: centos8igbinaryrel
-          build_service: centos8igbinaryrel
           bintray_uploader: centos8bintray
       - docker-rpmbuild/build:
           name: centos7igbinaryphp73
@@ -33,39 +25,27 @@ workflows:
           build_service: centos8igbinaryphp73
           bintray_uploader: centos8bintray
       - docker-rpmbuild/build:
-          name: centos7igbinaryphp74
-          build_file: docker-compose.php74.yml
-          build_service: centos7igbinaryphp74
+          name: centos7igbinaryphp80
+          build_file: docker-compose.php80.yml
+          build_service: centos7igbinaryphp80
           bintray_uploader: centos7bintray
       - docker-rpmbuild/build:
-          name: centos8igbinaryphp74
-          build_file: docker-compose.php74.yml
-          build_service: centos8igbinaryphp74
+          name: centos8igbinaryphp80
+          build_file: docker-compose.php80.yml
+          build_service: centos8igbinaryphp80
           bintray_uploader: centos8bintray
       - docker-rpmbuild/image:
-          name: centos7igbinaryphp7build
-          compose_file: build/php71/docker-compose.yml
-          build_service: centos7igbinaryphp7build
+          name: centos7igbinaryphp74build
+          compose_file: build/php74/docker-compose.yml
+          build_service: centos7igbinaryphp74build
           requires:
             - centos7igbinary
       - docker-rpmbuild/image:
-          name: centos7igbinaryphp7buildrel
-          compose_file: build/php71/docker-compose.yml
-          build_service: centos7igbinaryphp7buildrel
-          requires:
-            - centos7igbinaryrel
-      - docker-rpmbuild/image:
-          name: centos8igbinaryphp7build
-          compose_file: build/php71/docker-compose.yml
-          build_service: centos8igbinaryphp7build
+          name: centos8igbinaryphp74build
+          compose_file: build/php74/docker-compose.yml
+          build_service: centos8igbinaryphp74build
           requires:
             - centos8igbinary
-      - docker-rpmbuild/image:
-          name: centos8igbinaryphp7buildrel
-          compose_file: build/php71/docker-compose.yml
-          build_service: centos8igbinaryphp7buildrel
-          requires:
-            - centos8igbinaryrel
       - docker-rpmbuild/image:
           name: centos7igbinaryphp73build
           compose_file: build/php73/docker-compose.yml
@@ -79,15 +59,15 @@ workflows:
           requires:
             - centos8igbinaryphp73
       - docker-rpmbuild/image:
-          name: centos7igbinaryphp74build
-          compose_file: build/php74/docker-compose.yml
-          build_service: centos7igbinaryphp74build
+          name: centos7igbinaryphp80build
+          compose_file: build/php80/docker-compose.yml
+          build_service: centos7igbinaryphp80build
           requires:
-            - centos7igbinaryphp74
+            - centos7igbinaryphp80
       - docker-rpmbuild/image:
-          name: centos8igbinaryphp74build
-          compose_file: build/php74/docker-compose.yml
-          build_service: centos8igbinaryphp74build
+          name: centos8igbinaryphp80build
+          compose_file: build/php80/docker-compose.yml
+          build_service: centos8igbinaryphp80build
           requires:
-            - centos8igbinaryphp74
+            - centos8igbinaryphp80
 
