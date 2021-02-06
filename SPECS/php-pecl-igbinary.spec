@@ -71,7 +71,7 @@ sed -e '/COPYING/s/role="doc"/role="src"/' -i package.xml
 cd NTS
 
 # Check version
-subdir="php$(%{__php} -r 'echo PHP_MAJOR_VERSION;')"
+subdir="php$(%{__php} -r 'echo (PHP_MAJOR_VERSION < 7 ? 5 : 7);')"
 extver=$(sed -n '/#define PHP_IGBINARY_VERSION/{s/.* "//;s/".*$//;p}' src/$subdir/igbinary.h)
 if test "x${extver}" != "x%{upstream_version}%{?upstream_prever}"; then
    : Error: Upstream version is ${extver}, expecting %{upstream_version}%{?upstream_prever}.
