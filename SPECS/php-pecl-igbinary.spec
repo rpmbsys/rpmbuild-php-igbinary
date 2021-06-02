@@ -14,7 +14,7 @@
 %global with_zts   0%{?__ztsphp:1}
 %global ini_name   40-%{pecl_name}.ini
 
-%global upstream_version 3.2.1
+%global upstream_version 3.2.2
 #global upstream_prever  RC1
 
 Summary:        Replacement for the standard PHP serializer
@@ -28,7 +28,7 @@ URL:            https://pecl.php.net/package/igbinary
 
 BuildRequires:  gcc
 BuildRequires:  php-pear
-BuildRequires:  php-devel >= 7.0
+BuildRequires:  php-devel >= 7.3
 BuildRequires:  php-pecl-apcu-devel
 BuildRequires:  php-json
 
@@ -200,6 +200,9 @@ REPORT_EXIT_STATUS=1 \
 %endif
 
 %changelog
+* Mon Apr 19 2021 Remi Collet <remi@remirepo.net> - 3.2.2-1
+- update to 3.2.2
+
 * Mon Jan  4 2021 Remi Collet <remi@remirepo.net> - 3.2.1-1
 - update to 3.2.1
 
