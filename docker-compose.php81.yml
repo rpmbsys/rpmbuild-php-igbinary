@@ -1,6 +1,6 @@
 version: "3.5"
 services:
-  centos7igbinaryphp73:
+  centos7igbinaryphp81:
     volumes:
       - rpms:/home/centos/rpmbuild/SRPMS
       - rpm7:/home/centos/rpmbuild/RPMS
@@ -8,8 +8,8 @@ services:
       context: .
       args:
         centos: $OS7
-        image: php-apcu-7.3
-  centos8igbinaryphp73:
+        image: php-apcu-8.1
+  centos8igbinaryphp81:
     volumes:
       - rpms:/home/centos/rpmbuild/SRPMS
       - rpm8:/home/centos/rpmbuild/RPMS
@@ -17,7 +17,7 @@ services:
       context: .
       args:
         centos: $OS8
-        image: php-apcu-7.3
+        image: php-apcu-8.1
 
 volumes:
   rpms:

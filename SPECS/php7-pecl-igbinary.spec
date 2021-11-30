@@ -17,7 +17,7 @@
 %global with_zts   0%{?__ztsphp:1}
 %global ini_name   40-%{pecl_name}.ini
 
-%global upstream_version 3.2.2
+%global upstream_version 3.2.6
 #global upstream_prever  RC1
 
 Summary:        Replacement for the standard PHP serializer
@@ -69,6 +69,8 @@ cd NTS
 
 # Check version
 subdir="php$(%{__php} -r 'echo (PHP_MAJOR_VERSION < 7 ? 5 : 7);')"
+sed -e '/PHP_IGBINARY_VERSION/s/3.2.4/%{version}/' -i src/$subdir/igbinary.h
+
 extver=$(sed -n '/#define PHP_IGBINARY_VERSION/{s/.* "//;s/".*$//;p}' src/$subdir/igbinary.h)
 if test "x${extver}" != "x%{upstream_version}%{?upstream_prever}"; then
    : Error: Upstream version is ${extver}, expecting %{upstream_version}%{?upstream_prever}.
@@ -155,6 +157,9 @@ REPORT_EXIT_STATUS=1 \
 %{php_incldir}/ext/%{pecl_name}
 
 %changelog
+* Thu Oct 28 2021 Remi Collet <remi@remirepo.net> - 3.2.6-1
+- update to 3.2.6
+
 * Mon Apr 19 2021 Remi Collet <remi@remirepo.net> - 3.2.2-1
 - update to 3.2.2
 

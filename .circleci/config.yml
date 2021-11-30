@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  docker-rpmbuild: aursu/rpmbuild@1.1.7
+  docker-rpmbuild: aursu/rpmbuild@1.1.8
 
 parameters:
   artifactory-url:
@@ -21,14 +21,14 @@ workflows:
           build_service: centos8igbinary
           bintray_uploader: centos8bintray
       - docker-rpmbuild/build:
-          name: centos7igbinaryphp73
-          build_file: docker-compose.php73.yml
-          build_service: centos7igbinaryphp73
+          name: centos7igbinaryphp81
+          build_file: docker-compose.php81.yml
+          build_service: centos7igbinaryphp81
           bintray_uploader: centos7bintray
       - docker-rpmbuild/build:
-          name: centos8igbinaryphp73
-          build_file: docker-compose.php73.yml
-          build_service: centos8igbinaryphp73
+          name: centos8igbinaryphp81
+          build_file: docker-compose.php81.yml
+          build_service: centos8igbinaryphp81
           bintray_uploader: centos8bintray
       - docker-rpmbuild/build:
           name: centos7igbinaryphp80
@@ -53,17 +53,17 @@ workflows:
           requires:
             - centos8igbinary
       - docker-rpmbuild/image:
-          name: centos7igbinaryphp73build
-          compose_file: build/php73/docker-compose.yml
-          build_service: centos7igbinaryphp73build
+          name: centos7igbinaryphp81build
+          compose_file: build/php81/docker-compose.yml
+          build_service: centos7igbinaryphp81build
           requires:
-            - centos7igbinaryphp73
+            - centos7igbinaryphp81
       - docker-rpmbuild/image:
-          name: centos8igbinaryphp73build
-          compose_file: build/php73/docker-compose.yml
-          build_service: centos8igbinaryphp73build
+          name: centos8igbinaryphp81build
+          compose_file: build/php81/docker-compose.yml
+          build_service: centos8igbinaryphp81build
           requires:
-            - centos8igbinaryphp73
+            - centos8igbinaryphp81
       - docker-rpmbuild/image:
           name: centos7igbinaryphp80build
           compose_file: build/php80/docker-compose.yml
