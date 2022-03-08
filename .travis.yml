@@ -12,16 +12,14 @@ env:
   global:
     - ARTIFACTORY_URL=https://rpmb.jfrog.io
     - OS7=7.9.2009
-    - OS8=8.4.2105
+    - OS8=stream8
     - OS7TAG=7.9.2009
-    - OS8TAG=8.4.2105
+    - OS8TAG=stream8
   jobs:
     - BUILD_COMPOSE_FILE=docker-compose.yml       BINTRAY_REPO=php74custom BUILD=centos7igbinary      UPLOADER=centos7bintray
-    - BUILD_COMPOSE_FILE=docker-compose.yml       BINTRAY_REPO=php74custom BUILD=centos8igbinary      UPLOADER=centos8bintray
+    - BUILD_COMPOSE_FILE=docker-compose.yml       BINTRAY_REPO=php74custom BUILD=stream8igbinary      UPLOADER=stream8bintray REPO_PATH=centos/8-stream
     - BUILD_COMPOSE_FILE=docker-compose.php81.yml BINTRAY_REPO=php81custom BUILD=centos7igbinaryphp81 UPLOADER=centos7bintray
-    - BUILD_COMPOSE_FILE=docker-compose.php81.yml BINTRAY_REPO=php81custom BUILD=centos8igbinaryphp81 UPLOADER=centos8bintray
-    - BUILD_COMPOSE_FILE=docker-compose.php80.yml BINTRAY_REPO=php8custom  BUILD=centos7igbinaryphp80 UPLOADER=centos7bintray
-    - BUILD_COMPOSE_FILE=docker-compose.php80.yml BINTRAY_REPO=php8custom  BUILD=centos8igbinaryphp80 UPLOADER=centos8bintray
+    - BUILD_COMPOSE_FILE=docker-compose.php81.yml BINTRAY_REPO=php81custom BUILD=stream8igbinaryphp81 UPLOADER=stream8bintray REPO_PATH=centos/8-stream
 
 before_script:
   - docker-compose -f ${BUILD_COMPOSE_FILE} build --no-cache ${BUILD}
@@ -34,17 +32,13 @@ before_deploy:
 
 deploy:
   provider: script
-  script: docker-compose -f rpmbuild/docker-compose.bintray.yml run --rm -e BINTRAY_USER=$BINTRAY_USER -e BINTRAY_API_KEY=$BINTRAY_API_KEY -e BINTRAY_REPO=$BINTRAY_REPO -e ARTIFACTORY_URL=$ARTIFACTORY_URL ${UPLOADER}
+  script: docker-compose -f rpmbuild/docker-compose.bintray.yml run --rm -e BINTRAY_USER=$BINTRAY_USER -e BINTRAY_API_KEY=$BINTRAY_API_KEY -e BINTRAY_REPO=$BINTRAY_REPO -e ARTIFACTORY_URL=$ARTIFACTORY_URL -e REPO_PATH=$REPO_PATH ${UPLOADER}
   on:
     all_branches: true
 
 jobs:
   include:
     - stage: docker
-      before_install:
-        - docker-compose -f rpmbuild/docker-compose.yml pull  centos7repo centos8repo webrepo
-      install:
-        - docker-compose -f rpmbuild/docker-compose.yml up -d centos7repo centos8repo webrepo
       script:
         - docker-compose -f build/php74/docker-compose.yml build --no-cache --pull
       before_deploy:
@@ -55,10 +49,6 @@ jobs:
         on:
           all_branches: true
     - stage: docker
-      before_install:
-        - docker-compose -f rpmbuild/docker-compose.yml pull  centos7repo centos8repo webrepo
-      install:
-        - docker-compose -f rpmbuild/docker-compose.yml up -d  centos7repo centos8repo webrepo
       script:
         - docker-compose -f build/php81/docker-compose.yml build --no-cache --pull
       before_deploy:
@@ -66,19 +56,5 @@ jobs:
       deploy:
         provider: script
         script: docker-compose -f build/php81/docker-compose.yml push
-        on:
-          all_branches: true
-    - stage: docker
-      before_install:
-        - docker-compose -f rpmbuild/docker-compose.yml pull  centos7repo centos8repo webrepo
-      install:
-        - docker-compose -f rpmbuild/docker-compose.yml up -d  centos7repo centos8repo webrepo
-      script:
-        - docker-compose -f build/php80/docker-compose.yml build --no-cache --pull
-      before_deploy:
-        - docker login -u $DOCKER_USER -p $DOCKER_PASS
-      deploy:
-        provider: script
-        script: docker-compose -f build/php80/docker-compose.yml push
         on:
           all_branches: true

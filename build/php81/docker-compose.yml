@@ -1,4 +1,4 @@
-version: "3.5"
+version: "3"
 services:
   centos7igbinaryphp81build:
     build:
@@ -7,7 +7,7 @@ services:
         centos: $OS7
         image: php-8.1
     image: aursu/peclbuild:${OS7TAG}-php-igbinary-8.1
-  centos8igbinaryphp81build:
+  stream8igbinaryphp81build:
     build:
       context: .
       args:
