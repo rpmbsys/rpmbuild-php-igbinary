@@ -5,7 +5,6 @@ services:
       - rpm7:/home/centos/rpmbuild/RPMS
     build:
       context: .
-      dockerfile: Dockerfile.el7
       args:
         os: $OS7
         image: php-apcu-8.1
