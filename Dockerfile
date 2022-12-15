@@ -1,7 +1,7 @@
-ARG centos=7.9.2009
+ARG os=7.9.2009
 ARG image=php-apcu-7.4
 
-FROM aursu/peclbuild:${centos}-${image}
+FROM aursu/peclbuild:${os}-${image}
 
 COPY SOURCES ${BUILD_TOPDIR}/SOURCES
 COPY SPECS ${BUILD_TOPDIR}/SPECS

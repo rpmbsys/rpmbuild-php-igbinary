@@ -1,6 +1,6 @@
 # Fedora spec file for php-pecl-igbinary
 #
-# Copyright (c) 2010-2021 Remi Collet
+# Copyright (c) 2010-2022 Remi Collet
 # License: CC-BY-SA
 # http://creativecommons.org/licenses/by-sa/4.0/
 #
@@ -17,7 +17,7 @@
 %global with_zts   0%{?__ztsphp:1}
 %global ini_name   40-%{pecl_name}.ini
 
-%global upstream_version 3.2.6
+%global upstream_version 3.2.12
 #global upstream_prever  RC1
 
 Summary:        Replacement for the standard PHP serializer
@@ -31,7 +31,7 @@ URL:            https://pecl.php.net/package/igbinary
 
 BuildRequires:  gcc
 BuildRequires:  php-pear
-BuildRequires:  php-devel >= 7.3
+BuildRequires:  php-devel >= 7.4
 BuildRequires:  php-pecl-apcu-devel
 BuildRequires:  php-json
 
@@ -75,7 +75,6 @@ cd NTS
 
 # Check version
 subdir="php$(%{__php} -r 'echo (PHP_MAJOR_VERSION < 7 ? 5 : 7);')"
-sed -e '/PHP_IGBINARY_VERSION/s/3.2.4/%{version}/' -i src/$subdir/igbinary.h
 
 extver=$(sed -n '/#define PHP_IGBINARY_VERSION/{s/.* "//;s/".*$//;p}' src/$subdir/igbinary.h)
 if test "x${extver}" != "x%{upstream_version}%{?upstream_prever}"; then
@@ -147,7 +146,7 @@ sed -e '/^extension=/d' -i ?TS/tests/*phpt
 : simple NTS module load test, without APC, as optional
 %{_bindir}/php --no-php-ini \
     --define extension=%{buildroot}%{php_extdir}/%{pecl_name}.so \
-    --modules | grep %{pecl_name}
+    --modules | grep '^%{pecl_name}$'
 
 # APC required for test 045
 if [ -f %{php_extdir}/apcu.so ]; then
@@ -164,25 +163,19 @@ cd NTS
 # PHP 7.4 serrializatin error
 rm -f tests/__serialize_012.phpt
 
-TEST_PHP_EXECUTABLE=%{_bindir}/php \
 TEST_PHP_ARGS="-n $MOD -d extension=$PWD/modules/%{pecl_name}.so" \
-NO_INTERACTION=1 \
-REPORT_EXIT_STATUS=1 \
-%{_bindir}/php -n run-tests.php -x --show-diff
+%{_bindir}/php -n run-tests.php -x -q --show-diff %{?_smp_mflags}
 
 %if %{with_zts}
 : simple ZTS module load test, without APC, as optional
 %{__ztsphp} --no-php-ini \
     --define extension=%{buildroot}%{php_ztsextdir}/%{pecl_name}.so \
-    --modules | grep %{pecl_name}
+    --modules | grep '^%{pecl_name}$'
 
 : upstream test suite
 cd ../ZTS
-TEST_PHP_EXECUTABLE=%{__ztsphp} \
 TEST_PHP_ARGS="-n $MOD -d extension=$PWD/modules/%{pecl_name}.so" \
-NO_INTERACTION=1 \
-REPORT_EXIT_STATUS=1 \
-%{__ztsphp} -n run-tests.php -x --show-diff
+%{__ztsphp} -n run-tests.php -x -q --show-diff %{?_smp_mflags}
 %endif
 
 %files
@@ -205,6 +198,9 @@ REPORT_EXIT_STATUS=1 \
 %endif
 
 %changelog
+* Mon Nov  7 2022 Remi Collet <remi@remirepo.net> - 3.2.12-1
+- update to 3.2.12
+
 * Thu Oct 28 2021 Remi Collet <remi@remirepo.net> - 3.2.6-1
 - update to 3.2.6
 
@@ -376,4 +372,3 @@ REPORT_EXIT_STATUS=1 \
 
 * Wed Sep 29 2010 Remi Collet <rpms@famillecollet.com> 1.0.2-1
 - initital RPM
-
