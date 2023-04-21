@@ -1,0 +1,8 @@
+ARG os=8.7.20221112
+ARG image=php-8.2
+
+FROM aursu/pearbuild:${os}-${image}
+
+RUN dnf -y --repo=bintray-phpcustom install \
+        php-pecl-igbinary-devel \
+    && dnf clean all && rm -rf /var/cache/dnf /var/lib/rpm/__db*
