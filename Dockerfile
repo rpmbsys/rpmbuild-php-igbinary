@@ -1,5 +1,5 @@
 ARG os=7.9.2009
-ARG image=php-apcu-7.4
+ARG image=php-apcu-8.3
 
 FROM aursu/peclbuild:${os}-${image}
 
