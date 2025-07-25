@@ -1,11 +1,11 @@
 services:
-  rocky8build:
+  rocky10build:
     build:
       context: .
       args:
-        os: $RL8
+        os: $RL10
         image: php-8.2
-    image: aursu/peclbuild:${RL8TAG}-php-igbinary-8.2
+    image: aursu/peclbuild:${RL10TAG}-php-igbinary-8.2
   rocky9build:
     build:
       context: .
@@ -13,10 +13,3 @@ services:
         os: $RL9
         image: php-8.2
     image: aursu/peclbuild:${RL9TAG}-php-igbinary-8.2
-  stream9build:
-    build:
-      context: .
-      args:
-        os: $OS9
-        image: php-8.2
-    image: aursu/peclbuild:${OS9TAG}-php-igbinary-8.2
