@@ -3,6 +3,10 @@ ARG image=php-apcu-5.6
 
 FROM aursu/peclbuild:${os}-${image}
 
+RUN dnf -y --enablerepo=bintray-phpcustom install \
+        php-pecl-jsonc-devel \
+    && dnf clean all && rm -rf /var/cache/dnf /var/lib/rpm/__db*
+
 COPY SOURCES ${BUILD_TOPDIR}/SOURCES
 COPY SPECS ${BUILD_TOPDIR}/SPECS
 
