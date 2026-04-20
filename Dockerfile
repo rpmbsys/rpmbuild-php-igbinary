@@ -1,5 +1,5 @@
-ARG os=10.1.20251126
-ARG image=php-apcu-8.4
+ARG os=8.10.20240528
+ARG image=php-apcu-5.6
 
 FROM aursu/peclbuild:${os}-${image}
 

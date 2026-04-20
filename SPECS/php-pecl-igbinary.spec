@@ -1,39 +1,36 @@
 # Fedora spec file for php-pecl-igbinary
 #
-# Copyright (c) 2010-2024 Remi Collet
-# License: CC-BY-SA-4.0
+# Copyright (c) 2010-2018 Remi Collet
+# License: CC-BY-SA
 # http://creativecommons.org/licenses/by-sa/4.0/
 #
 # Please, preserve the changelog entries
 #
 
+# we don't want -z defs linker flag
+%undefine _strict_symbol_defs_build
+
 %global pecl_name  igbinary
+%global with_zts   0%{?__ztsphp:1}
 %global ini_name   40-%{pecl_name}.ini
 
-%global upstream_version 3.2.16
+%global upstream_version 2.0.8
 #global upstream_prever  RC1
-%global sources          %{pecl_name}-%{upstream_version}%{?upstream_prever}
 
 Summary:        Replacement for the standard PHP serializer
 Name:           php-pecl-igbinary
 Version:        %{upstream_version}%{?upstream_prever:~%{upstream_prever}}
-Release:        4%{?dist}
-Source0:        https://pecl.php.net/get/%{sources}.tgz
-License:        BSD-3-Clause
+Release:        2%{?dist}
+Source0:        http://pecl.php.net/get/%{pecl_name}-%{upstream_version}%{?upstream_prever}.tgz
+License:        BSD
 
-URL:            https://pecl.php.net/package/igbinary
-
-Patch0:         393.patch
-
-ExcludeArch:    %{ix86}
+URL:            http://pecl.php.net/package/igbinary
 
 BuildRequires:  gcc
 BuildRequires:  php-pear
-BuildRequires:  php-devel >= 7.0
+BuildRequires:  php-devel >= 5.2.0
 BuildRequires:  php-pecl-apcu-devel
 BuildRequires:  php-json
-# used by tests
-BuildRequires:  tzdata
 
 Requires:       php(zend-abi) = %{php_zend_api}
 Requires:       php(api) = %{php_core_api}
@@ -43,6 +40,7 @@ Provides:       php-%{pecl_name}%{?_isa} = %{version}
 Provides:       php-pecl(%{pecl_name}) = %{version}
 Provides:       php-pecl(%{pecl_name})%{?_isa} = %{version}
 
+
 %description
 Igbinary is a drop in replacement for the standard PHP serializer.
 
@@ -50,6 +48,7 @@ Instead of time and space consuming textual representation,
 igbinary stores PHP data structures in a compact binary form. 
 Savings are significant when using memcached or similar memory
 based storages for serialized data.
+
 
 %package devel
 Summary:       Igbinary developer files (header)
@@ -59,22 +58,27 @@ Requires:      php-devel%{?_isa}
 %description devel
 These are the files needed to compile programs using Igbinary
 
+
 %prep
 %setup -q -c
+mv %{pecl_name}-%{upstream_version}%{?upstream_prever} NTS
 
 sed -e '/COPYING/s/role="doc"/role="src"/' -i package.xml
 
-cd %{sources}
-%patch -P0 -p1 -b .pr393
+cd NTS
 
 # Check version
-subdir="php$(%{__php} -r 'echo (PHP_MAJOR_VERSION < 7 ? 5 : 7);')"
+subdir="php$(%{__php} -r 'echo PHP_MAJOR_VERSION;')"
 extver=$(sed -n '/#define PHP_IGBINARY_VERSION/{s/.* "//;s/".*$//;p}' src/$subdir/igbinary.h)
 if test "x${extver}" != "x%{upstream_version}%{?upstream_prever}"; then
    : Error: Upstream version is ${extver}, expecting %{upstream_version}%{?upstream_prever}.
    exit 1
 fi
 cd ..
+
+%if %{with_zts}
+cp -r NTS ZTS
+%endif
 
 cat <<EOF | tee %{ini_name}
 ; Enable %{pecl_name} extension module
@@ -91,28 +95,36 @@ extension=%{pecl_name}.so
 ;apc.serializer=igbinary
 EOF
 
+
 %build
-cd %{sources}
-%{__phpize}
-sed -e 's/INSTALL_ROOT/DESTDIR/' -i build/Makefile.global
+cd NTS
+%{_bindir}/phpize
+%configure --with-php-config=%{_bindir}/php-config
+make %{?_smp_mflags}
 
-%configure --with-php-config=%{__phpconfig}
-
-%make_build
+%if %{with_zts}
+cd ../ZTS
+%{_bindir}/zts-phpize
+%configure --with-php-config=%{_bindir}/zts-php-config
+make %{?_smp_mflags}
+%endif
 
 
 %install
-: Install package.xml
+make install -C NTS INSTALL_ROOT=%{buildroot}
+
 install -D -m 644 package.xml %{buildroot}%{pecl_xmldir}/%{name}.xml
 
-: Install the configuration file
 install -D -m 644 %{ini_name} %{buildroot}%{php_inidir}/%{ini_name}
 
-: Install the extension
-cd %{sources}
-%make_install
+# Install the ZTS stuff
+%if %{with_zts}
+make install -C ZTS INSTALL_ROOT=%{buildroot}
+install -D -m 644 %{ini_name} %{buildroot}%{php_ztsinidir}/%{ini_name}
+%endif
 
-: Install Test and Documentation
+# Test & Documentation
+cd NTS
 for i in $(grep 'role="test"' ../package.xml | sed -e 's/^.*name="//;s/".*$//')
 do [ -f $i       ] && install -Dpm 644 $i       %{buildroot}%{pecl_testdir}/%{pecl_name}/$i
    [ -f tests/$i ] && install -Dpm 644 tests/$i %{buildroot}%{pecl_testdir}/%{pecl_name}/tests/$i
@@ -123,174 +135,72 @@ done
 
 
 %check
-cd %{sources}
-MOD=""
 # drop extension load from phpt
-sed -e '/^extension=/d' -i tests/*phpt
-
-: simple module load test, without APC, as optional
-%{__php} --no-php-ini \
-    --define extension=%{buildroot}%{php_extdir}/%{pecl_name}.so \
-    --modules | grep '^%{pecl_name}$'
+sed -e '/^extension=/d' -i ?TS/tests/*phpt
 
 # APC required for test 045
 if [ -f %{php_extdir}/apcu.so ]; then
   MOD="-d extension=apcu.so"
 fi
+
+: simple NTS module load test, without APC, as optional
+%{_bindir}/php --no-php-ini \
+    --define extension=%{buildroot}%{php_extdir}/%{pecl_name}.so \
+    --modules | grep %{pecl_name}
+
 # Json used in tests
 if [ -f %{php_extdir}/json.so ]; then
   MOD="$MOD -d extension=json.so"
 fi
 
+
 : upstream test suite
-TEST_PHP_ARGS="-n $MOD -d extension=modules/%{pecl_name}.so" \
-%{__php} -n run-tests.php -x -q --show-diff %{?_smp_mflags}
+cd NTS
+TEST_PHP_EXECUTABLE=%{_bindir}/php \
+TEST_PHP_ARGS="-n $MOD -d extension=$PWD/modules/%{pecl_name}.so" \
+NO_INTERACTION=1 \
+REPORT_EXIT_STATUS=1 \
+%{_bindir}/php -n run-tests.php --show-diff
+
+%if %{with_zts}
+: simple ZTS module load test, without APC, as optional
+%{__ztsphp} --no-php-ini \
+    --define extension=%{buildroot}%{php_ztsextdir}/%{pecl_name}.so \
+    --modules | grep %{pecl_name}
+
+: upstream test suite
+cd ../ZTS
+TEST_PHP_EXECUTABLE=%{__ztsphp} \
+TEST_PHP_ARGS="-n $MOD -d extension=$PWD/modules/%{pecl_name}.so" \
+NO_INTERACTION=1 \
+REPORT_EXIT_STATUS=1 \
+%{__ztsphp} -n run-tests.php --show-diff
+%endif
 
 
 %files
-%license %{sources}/COPYING
+%{?_licensedir:%license NTS/COPYING}
 %doc %{pecl_docdir}/%{pecl_name}
 %config(noreplace) %{php_inidir}/%{ini_name}
 %{php_extdir}/%{pecl_name}.so
 %{pecl_xmldir}/%{name}.xml
 
+%if %{with_zts}
+%config(noreplace) %{php_ztsinidir}/%{ini_name}
+%{php_ztsextdir}/%{pecl_name}.so
+%endif
+
+
 %files devel
 %doc %{pecl_testdir}/%{pecl_name}
 %{php_incldir}/ext/%{pecl_name}
 
+%if %{with_zts}
+%{php_ztsincldir}/ext/%{pecl_name}
+%endif
+
 
 %changelog
-* Sat Jan 18 2025 Fedora Release Engineering <releng@fedoraproject.org> - 3.2.16-4
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_42_Mass_Rebuild
-
-* Tue Oct 15 2024 Remi Collet <remi@fedoraproject.org> - 3.2.16-3
-- modernize spec file
-
-* Mon Oct 14 2024 Remi Collet <remi@fedoraproject.org> - 3.2.16-2
-- rebuild for https://fedoraproject.org/wiki/Changes/php84
-
-* Mon Aug 12 2024 Remi Collet <remi@remirepo.net> - 3.2.16-1
-- update to 3.2.16 (no change)
-
-* Fri Jul 19 2024 Fedora Release Engineering <releng@fedoraproject.org> - 3.2.15-5
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_41_Mass_Rebuild
-
-* Tue Apr 16 2024 Remi Collet <remi@remirepo.net> - 3.2.15-4
-- drop 32-bit support
-  https://fedoraproject.org/wiki/Changes/php_no_32_bit
-
-* Thu Jan 25 2024 Fedora Release Engineering <releng@fedoraproject.org> - 3.2.15-3
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_40_Mass_Rebuild
-
-* Sun Jan 21 2024 Fedora Release Engineering <releng@fedoraproject.org> - 3.2.15-2
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_40_Mass_Rebuild
-
-* Mon Dec  4 2023 Remi Collet <remi@remirepo.net> - 3.2.15-1
-- update to 3.2.15
-
-* Wed Oct  4 2023 Remi Collet <remi@remirepo.net> - 3.2.14-2
-- build out of sources tree
-
-* Tue Oct  3 2023 Remi Collet <remi@remirepo.net> - 3.2.14-1
-- update to 3.2.14
-
-* Fri Jul 21 2023 Fedora Release Engineering <releng@fedoraproject.org> - 3.2.13-2
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_39_Mass_Rebuild
-
-* Fri Feb  3 2023 Remi Collet <remi@remirepo.net> - 3.2.13-1
-- update to 3.2.13
-
-* Fri Jan 20 2023 Fedora Release Engineering <releng@fedoraproject.org> - 3.2.12-2
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_38_Mass_Rebuild
-
-* Mon Nov  7 2022 Remi Collet <remi@remirepo.net> - 3.2.12-1
-- update to 3.2.12
-
-* Mon Nov  7 2022 Remi Collet <remi@remirepo.net> - 3.2.11-1
-- update to 3.2.11
-
-* Mon Oct 17 2022 Remi Collet <remi@remirepo.net> - 3.2.9-1
-- update to 3.2.9
-
-* Wed Oct 05 2022 Remi Collet <remi@remirepo.net> - 3.2.7-4
-- rebuild for https://fedoraproject.org/wiki/Changes/php82
-
-* Fri Jul 22 2022 Fedora Release Engineering <releng@fedoraproject.org> - 3.2.7-3
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_37_Mass_Rebuild
-
-* Fri Jan 21 2022 Fedora Release Engineering <releng@fedoraproject.org> - 3.2.7-2
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
-
-* Wed Jan 12 2022 Remi Collet <remi@remirepo.net> - 3.2.7-1
-- update to 3.2.7
-
-* Thu Oct 28 2021 Remi Collet <remi@remirepo.net> - 3.2.6-1
-- update to 3.2.6
-- rebuild for https://fedoraproject.org/wiki/Changes/php81
-
-* Sun Aug  8 2021 Remi Collet <remi@remirepo.net> - 3.2.5-1
-- update to 3.2.5
-
-* Sun Jul 25 2021 Remi Collet <remi@remirepo.net> - 3.2.4-1
-- update to 3.2.4
-
-* Fri Jul 23 2021 Fedora Release Engineering <releng@fedoraproject.org> - 3.2.3-2
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_35_Mass_Rebuild
-
-* Thu Jun 10 2021 Remi Collet <remi@remirepo.net> - 3.2.3-1
-- update to 3.2.3
-
-* Mon Apr 19 2021 Remi Collet <remi@remirepo.net> - 3.2.2-1
-- update to 3.2.2
-
-* Thu Mar  4 2021 Remi Collet <remi@remirepo.net> - 3.2.1-3
-- rebuild for https://fedoraproject.org/wiki/Changes/php80
-
-* Wed Jan 27 2021 Fedora Release Engineering <releng@fedoraproject.org> - 3.2.1-2
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
-
-* Mon Jan  4 2021 Remi Collet <remi@remirepo.net> - 3.2.1-1
-- update to 3.2.1
-
-* Fri Oct  9 2020 Remi Collet <remi@remirepo.net> - 3.1.6-1
-- update to 3.1.6
-
-* Thu Sep  3 2020 Remi Collet <remi@remirepo.net> - 3.1.5-1
-- update to 3.1.5
-
-* Mon Aug 10 2020 Remi Collet <remi@remirepo.net> - 3.1.4-1
-- update to 3.1.4
-
-* Tue Jul 28 2020 Fedora Release Engineering <releng@fedoraproject.org> - 3.1.2-2
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
-
-* Mon Jun 15 2020 Remi Collet <remi@remirepo.net> - 3.1.2-1
-- update to 3.1.2
-- add upstream patches for recent PHP versions
-
-* Thu Jan 30 2020 Fedora Release Engineering <releng@fedoraproject.org> - 3.1.1-2
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
-
-* Fri Jan 17 2020 Remi Collet <remi@remirepo.net> - 3.1.1-1
-- update to 3.1.1
-
-* Sat Dec 28 2019 Remi Collet <remi@remirepo.net> - 3.1.0-1
-- update to 3.1.0
-
-* Thu Oct 03 2019 Remi Collet <remi@remirepo.net> - 3.0.1-3
-- rebuild for https://fedoraproject.org/wiki/Changes/php74
-
-* Fri Jul 26 2019 Fedora Release Engineering <releng@fedoraproject.org> - 3.0.1-2
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_31_Mass_Rebuild
-
-* Thu Mar 21 2019 Remi Collet <remi@remirepo.net> - 3.0.1-1
-- update to 3.0.1 (no change)
-
-* Mon Feb 18 2019 Remi Collet <remi@remirepo.net> - 3.0.0-1
-- update to 3.0.0
-- no API change
-- raise dependency on PHP 7
-
 * Sat Feb 02 2019 Fedora Release Engineering <releng@fedoraproject.org> - 2.0.8-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
 

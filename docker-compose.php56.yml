@@ -1,0 +1,13 @@
+services:
+  rocky8build:
+    volumes:
+      - rpm8rocky:/home/centos/rpmbuild/RPMS
+    build:
+      context: .
+      args:
+        os: $RL8
+        image: php-apcu-5.6
+
+volumes:
+  rpm8rocky:
+    name: rpm8rocky
