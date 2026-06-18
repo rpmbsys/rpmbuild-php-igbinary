@@ -1,5 +1,5 @@
 ARG os=10.1.20251126
-ARG image=php-8.1
+ARG image=php-8.5
 
 FROM aursu/pearbuild:${os}-${image}
 
