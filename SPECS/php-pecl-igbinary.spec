@@ -1,8 +1,8 @@
 # Fedora spec file for php-pecl-igbinary
 #
-# Copyright (c) 2010-2024 Remi Collet
-# License: CC-BY-SA-4.0
-# http://creativecommons.org/licenses/by-sa/4.0/
+# SPDX-FileCopyrightText:  Copyright 2010-2025 Remi Collet
+# SPDX-License-Identifier: CECILL-2.1
+# http://www.cecill.info/licences/Licence_CeCILL_V2-en.txt
 #
 # Please, preserve the changelog entries
 #
@@ -17,13 +17,15 @@
 Summary:        Replacement for the standard PHP serializer
 Name:           php-pecl-igbinary
 Version:        %{upstream_version}%{?upstream_prever:~%{upstream_prever}}
-Release:        4%{?dist}
+Release:        7%{?dist}
 Source0:        https://pecl.php.net/get/%{sources}.tgz
 License:        BSD-3-Clause
 
 URL:            https://pecl.php.net/package/igbinary
 
 Patch0:         393.patch
+Patch1:         398.patch
+Patch2:         399.patch
 
 ExcludeArch:    %{ix86}
 
@@ -43,6 +45,7 @@ Provides:       php-%{pecl_name}%{?_isa} = %{version}
 Provides:       php-pecl(%{pecl_name}) = %{version}
 Provides:       php-pecl(%{pecl_name})%{?_isa} = %{version}
 
+
 %description
 Igbinary is a drop in replacement for the standard PHP serializer.
 
@@ -50,6 +53,7 @@ Instead of time and space consuming textual representation,
 igbinary stores PHP data structures in a compact binary form. 
 Savings are significant when using memcached or similar memory
 based storages for serialized data.
+
 
 %package devel
 Summary:       Igbinary developer files (header)
@@ -59,6 +63,7 @@ Requires:      php-devel%{?_isa}
 %description devel
 These are the files needed to compile programs using Igbinary
 
+
 %prep
 %setup -q -c
 
@@ -66,6 +71,8 @@ sed -e '/COPYING/s/role="doc"/role="src"/' -i package.xml
 
 cd %{sources}
 %patch -P0 -p1 -b .pr393
+%patch -P1 -p1 -b .pr398
+%patch -P2 -p1 -b .pr399
 
 # Check version
 subdir="php$(%{__php} -r 'echo (PHP_MAJOR_VERSION < 7 ? 5 : 7);')"
@@ -90,6 +97,7 @@ extension=%{pecl_name}.so
 ; Use igbinary as APC serializer
 ;apc.serializer=igbinary
 EOF
+
 
 %build
 cd %{sources}
@@ -160,6 +168,20 @@ TEST_PHP_ARGS="-n $MOD -d extension=modules/%{pecl_name}.so" \
 
 
 %changelog
+* Sat Jan 17 2026 Fedora Release Engineering <releng@fedoraproject.org> - 3.2.16-7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_44_Mass_Rebuild
+
+* Wed Sep 17 2025 Remi Collet <remi@remirepo.net> - 3.2.16-6
+- rebuild for https://fedoraproject.org/wiki/Changes/php85
+- fix for PHP 8.5.0beta2 using patch from
+  https://github.com/igbinary/igbinary/pull/399
+- fix for PHP 8.5.0alpha3 using patch from
+  https://github.com/igbinary/igbinary/pull/398
+- re-license spec file to CECILL-2.1
+
+* Fri Jul 25 2025 Fedora Release Engineering <releng@fedoraproject.org> - 3.2.16-5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_43_Mass_Rebuild
+
 * Sat Jan 18 2025 Fedora Release Engineering <releng@fedoraproject.org> - 3.2.16-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_42_Mass_Rebuild
 

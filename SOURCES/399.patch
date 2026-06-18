@@ -1,0 +1,55 @@
+From d28f7e6e5a2e7f73225bdf9b619920a7986ff885 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Mon, 1 Sep 2025 14:59:55 +0200
+Subject: [PATCH] fix tests for 8.5.0beta2
+
+---
+ tests/igbinary_026_php8.phpt  | 2 --
+ tests/igbinary_026b_php8.phpt | 4 +---
+ tests/igbinary_057.phpt       | 2 +-
+ 3 files changed, 2 insertions(+), 6 deletions(-)
+
+diff --git a/tests/igbinary_026_php8.phpt b/tests/igbinary_026_php8.phpt
+index 91313d16..9a5aad4e 100644
+--- a/tests/igbinary_026_php8.phpt
++++ b/tests/igbinary_026_php8.phpt
+@@ -1,7 +1,5 @@
+ --TEST--
+ Cyclic array test
+---INI--
+-report_memleaks=0
+ --SKIPIF--
+ <?php
+ if (!extension_loaded('igbinary')) {
+diff --git a/tests/igbinary_026b_php8.phpt b/tests/igbinary_026b_php8.phpt
+index b5ffa9cd..7489d539 100644
+--- a/tests/igbinary_026b_php8.phpt
++++ b/tests/igbinary_026b_php8.phpt
+@@ -1,7 +1,5 @@
+ --TEST--
+ Cyclic array test 2
+---INI--
+-report_memleaks=0
+ --SKIPIF--
+ <?php
+ if (!extension_loaded('igbinary')) {
+@@ -83,4 +81,4 @@ array(1) {
+   }
+ }
+ 
+-OK
+\ No newline at end of file
++OK
+diff --git a/tests/igbinary_057.phpt b/tests/igbinary_057.phpt
+index 7df8ab5b..7d86d134 100644
+--- a/tests/igbinary_057.phpt
++++ b/tests/igbinary_057.phpt
+@@ -6,7 +6,7 @@ Test serializing more strings than the capacity of the initial strings table.
+ function main() {
+ 	$array = array();
+ 	for ($i = 0; $i < 2; $i++) {
+-		for ($c = 'a'; $c < 'z'; $c++) {
++		for ($c = 'a'; $c < 'z'; $c = chr(ord($c)+1)) {
+ 			$array[] = $c;
+ 		}
+ 	}
