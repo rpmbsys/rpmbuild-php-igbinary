@@ -3,7 +3,7 @@
 single PHP minor. Writes ``test=<json>`` and ``docker=<json>`` to
 ``$GITHUB_OUTPUT`` (falls back to stdout when run locally).
 
-Usage: php-matrix.py <all|8.5|85|8.4|84|8.3|83|8.2|82>
+Usage: php-matrix.py <all|8.5|85|8.4|84|8.3|83|8.2|82|8.1|81>
 
   test   - include-entries for the RPM build job (PHP minor x Rocky 9/10)
   docker - base-publish compose files (base-publisher repos consume this;
@@ -13,7 +13,7 @@ import json
 import os
 import sys
 
-SUPPORTED = ["82", "83", "84", "85"]
+SUPPORTED = ["81", "82", "83", "84", "85"]
 ROCKY = ["10", "9"]
 
 
@@ -29,7 +29,7 @@ def matrices(selector):
     elif sel in SUPPORTED:
         versions = [sel]
     else:
-        raise ValueError(f"invalid PHP selector {selector!r} (want all|8.2|8.3|8.4|8.5)")
+        raise ValueError(f"invalid PHP selector {selector!r} (want all|8.1|8.2|8.3|8.4|8.5)")
 
     test = [
         {
